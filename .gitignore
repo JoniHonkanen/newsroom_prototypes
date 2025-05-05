@@ -1,0 +1,28 @@
+# Python cache & build artifacts
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+
+# Virtual environments
+venv/
+env/
+.venv/
+
+# Environment files (ignore all .env files in all directories)
+*.env
+
+# Editor settings
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Docker volume (jos käytät)
+pgdata/
+
+# Logs
+*.log

@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg
+*.egg-info/
+dist/
+build/
+.env
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# Virtual environment
+venv/
+env/
+.venv
+
+# Jupyter (jos käytössä)
+.ipynb_checkpoints/
+
+# Docker volumes
+pgdata/
+*.log
+
+# System
+.DS_Store
+Thumbs.db
