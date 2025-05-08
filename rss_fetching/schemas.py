@@ -1,4 +1,5 @@
-from pydantic import BaseModel, Field
+from dataclasses import dataclass
+from pydantic import BaseModel, Field, HttpUrl
 from typing import List, Literal
 from enum import Enum
 from typing import Optional
@@ -50,7 +51,19 @@ class NewsDraftPlan(BaseModel):
     published: Optional[str] = Field(
         description="ISO 8601 timestamp indicating when the article was originally published."
     )
-    #pydantic will automatically convert enum values to their string representation!!!
+    web_search_queries: List[str] = Field(
+        description=(
+            "Auto-generated search queries derived from the idea, summary, and keywords. "
+            "Queries should focus on retrieving recent, relevant, and factual information to enrich the article. "
+            "Prefer terms that help find up-to-date news, expert commentary, or official statements related to the topic."
+        )
+    )
+    markdown: Optional[str] = Field(
+        default=None, description="Original news as markdown format."
+    )
+    url: Optional[str] = Field( default=None, description="The full URL of the article.")
+
+    # pydantic will automatically convert enum values to their string representation!!!
     class Config:
         use_enum_values = True
 
@@ -58,12 +71,17 @@ class NewsDraftPlan(BaseModel):
 # This model is used to represent the content blocks of the generated news article.
 # Each block can be of different types, such as 'intro', 'text', 'subheading', or 'image'.
 class ContentBlock(BaseModel):
-    type: Literal["intro", "text", "subheading", "image"] = Field(
-        description="Type of content: 'intro' for lead paragraph, 'text' for body, 'subheading' for section title, 'image' for media reference."
+    type: Literal["headline", "intro", "text", "subheading", "image"] = Field(
+        description="Type of content: 'headline' for the main article title, 'intro' for lead paragraph, 'text' for body, 'subheading' for section title, 'image' for media reference."
     )
     content: str = Field(
         description="The actual content of the block: plain text, subheading text, or image description/URL."
     )
+
+
+class ArticleReference(BaseModel):
+    title: str = Field(description="The title of the referenced article.")
+    url: str = Field(description="The original URL of the referenced article.")
 
 
 # This model represents the generated news item, including its title, categories, and body content.
@@ -84,4 +102,36 @@ class GeneratedNewsItem(BaseModel):
     )
     language: str = Field(
         description="The language code of the generated article content, e.g., 'fi', 'en' or 'sv' using ISO 639-1 language codes."
+    )
+    references: Optional[List[ArticleReference]] = Field(
+        default=None,
+        description="List of original and supporting articles used as sources. Includes titles and URLs.",
+    )
+    # pydantic will automatically convert enum values to their string representation!!!
+    class Config:
+        use_enum_values = True
+
+
+# TODO:: mietippä tätä uusiksi
+# Ehkä tän pysyisi jotenkin tekemään samalla tavalla kuin ContentBlock... eli poistaisi tän...
+class ContentBlockWeb(BaseModel):
+    type: Literal["title", "subheading", "text", "image"]
+    content: str
+
+
+# this for web search,
+class StructuredSourceArticle(BaseModel):
+    url: HttpUrl = Field(description="The full URL to the source article.")
+    domain: str = Field(
+        description="The domain name of the article's source, e.g. 'yle.fi'"
+    )
+    published: Optional[datetime] = Field(
+        default=None,
+        description="The publication timestamp of the article in ISO 8601 format, if available.",
+    )
+    content_blocks: List[ContentBlockWeb] = Field(
+        description="A list of structured content blocks from the article."
+    )
+    markdown: str = Field(
+        description="The same content rendered as Markdown, for LLM‐syötteeksi."
     )
