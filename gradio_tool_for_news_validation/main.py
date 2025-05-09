@@ -1,4 +1,4 @@
-from typing import TypedDict, Tuple, Generator
+from typing import TypedDict, Tuple, Generator, List
 from langgraph.graph import StateGraph, START, END
 from langchain.chat_models import init_chat_model
 from dotenv import load_dotenv
@@ -7,7 +7,11 @@ import gradio as gr
 # omat importit
 from services.article_fetcher import extract_article_text, render_article_as_markdown
 from schemas import GeneratedNewsItem, NewsDraftPlan
-from services.web_search import generate_search_queries, run_web_search
+from services.web_search import (
+    generate_search_queries,
+    run_web_search,
+    StructuredSourceArticle,
+)
 from prompts import NEWS_PLANNING_PROMPT, GENERATE_NEWS_PROMPT
 
 load_dotenv()
@@ -18,6 +22,8 @@ class State(TypedDict):
     url: str
     drafts: NewsDraftPlan
     generated_news: GeneratedNewsItem
+    search_results: List[StructuredSourceArticle]
+    queries: List[str]
 
 
 def bot_get_idea(state: State) -> dict:
@@ -59,6 +65,8 @@ def bot_generate_news(state: State) -> dict:
         web_articles=bg,
     )
     article: GeneratedNewsItem = structured.invoke(prompt)
+    md = render_generated_news(article)
+    article.markdown = md
 
     return {"generated_news": article, "search_results": articles, "queries": queries}
 
@@ -98,52 +106,30 @@ def process_article_url_stream(
     # STEP 1: Fetch original article and show it immediately
     full_text, published = extract_article_text(url)
     original_md = render_article_as_markdown(full_text)
-    # First yield: only show the original article
     yield "", original_md, "", ""
 
-    # STEP 2: Generate draft plan
-    formatted_plan_prompt = plan_prompt_text.format(
-        article_text=original_md, published_date=published or "Unknown"
-    )
-    structured_plan = llm.with_structured_output(NewsDraftPlan)
-    draft: NewsDraftPlan = structured_plan.invoke(formatted_plan_prompt)
-    draft.markdown = original_md
-    draft.url = url
+    # STEP 2 & 4: Delegate planning and generation to the graph
+    # Syöttötilaksi riittää URL; graph-solmut käyttävät globaaleja prompt-muuttujia
+    initial_state = {"url": url}
+    final_state = graph.invoke(initial_state)  # :contentReference[oaicite:0]{index=0}
 
-    # STEP 3: Show search queries and placeholder for enriched article
+    # Hae luonnos ja generaattiot
+    draft: NewsDraftPlan = final_state["drafts"]
     queries = draft.web_search_queries or generate_search_queries(draft)
     yield f"**Search queries:** {', '.join(queries)}", original_md, "Generating enriched article…", ""
 
-    # STEP 4: Perform web search and generate final article
-    articles = run_web_search(queries)
-    web_md = "\n\n".join(
-        f"## Web search article {i+1}\nURL: {a.url}\n\n{a.markdown}"
-        for i, a in enumerate(articles, start=1)
-        if a.markdown
-    )
-    formatted_gen_prompt = gen_prompt_text.format(
-        idea=draft.idea,
-        summary=draft.summary,
-        keywords=", ".join(draft.keywords),
-        published=draft.published,
-        language=draft.language,
-        original_article=original_md,
-        original_article_url=draft.url,
-        web_articles=web_md,
-    )
-    structured_gen = llm.with_structured_output(GeneratedNewsItem)
-    generated: GeneratedNewsItem = structured_gen.invoke(formatted_gen_prompt)
+    generated: GeneratedNewsItem = final_state["generated_news"]
     enriched_md = render_generated_news(generated)
+    articles = final_state["search_results"]
 
-    # Collect source URLs and render source articles
+    # Kokoa lähdeartikkelit markdowniksi
     source_urls = [str(a.url) for a in articles]
     source_md = "\n\n".join(
-        f"### Article {i+1}\n\n**URL:** {source_urls[i]}\n\n{a.markdown}"
-        for i, a in enumerate(articles, start=0)
+        f"### Article {i+1}\n\n**URL:** {u}\n\n{a.markdown}"
+        for i, (u, a) in enumerate(zip(source_urls, articles), start=1)
         if a.markdown
     )
 
-    # Final yield: show enriched article and sources
     yield (
         f"**Search queries:** {', '.join(queries)}\n\n"
         f"**Source URLs:**\n- " + "\n- ".join(source_urls),

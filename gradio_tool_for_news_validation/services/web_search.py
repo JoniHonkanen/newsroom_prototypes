@@ -29,6 +29,7 @@ HEADERS = {
     )
 }
 
+
 # this is just fallback... if llm havent generated any search queries, we generate em here
 def generate_search_queries(draft) -> List[str]:
     queries = []

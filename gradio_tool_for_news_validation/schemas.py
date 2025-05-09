@@ -108,6 +108,9 @@ class GeneratedNewsItem(BaseModel):
         default=None,
         description="List of original and supporting articles used as sources. Includes titles and URLs.",
     )
+    markdown: Optional[str] = Field(
+        default=None, description="Generated news article in markdown format."
+    )
 
     # pydantic will automatically convert enum values to their string representation!!!
     class Config:
@@ -134,6 +137,30 @@ class StructuredSourceArticle(BaseModel):
     content_blocks: List[ContentBlockWeb] = Field(
         description="A list of structured content blocks from the article."
     )
-    markdown: str = Field(
-        description="The same content rendered as Markdown, for LLM‐syötteeksi."
+    markdown: str = Field(description="The same content rendered as Markdown, for LLM.")
+
+
+# Schemas for editor in cheaf agent
+class ReviewIssue(BaseModel):
+    type: Literal["Legal", "Accuracy", "Ethics", "Style", "Other"] = Field(
+        description="Category of the issue"
+    )
+    location: str = Field(
+        description="Where in the article the issue appears (e.g., 'Headline', 'Paragraph 3')"
+    )
+    description: str = Field(description="What the issue is")
+    suggestion: str = Field(description="How to correct or improve it")
+
+
+class ReviewedNewsItem(BaseModel):
+    status: Literal["OK", "ISSUES_FOUND"] = Field(
+        description="Overall result of the editorial review"
+    )
+    issues: List[ReviewIssue] = Field(
+        default_factory=list,
+        description="List of issues found during review. Empty if status is OK.",
+    )
+    news_as_html: Optional[str] = Field(
+        default=None,
+        description="The full news article rendered in HTML. Present only if the article was revised.",
     )
