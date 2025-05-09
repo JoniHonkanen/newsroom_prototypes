@@ -92,36 +92,30 @@ def process_article_url_stream(
     plan_prompt_text: str,
     gen_prompt_text: str,
 ) -> Generator[Tuple[str, str, str, str], None, None]:
-    # Initialize the LLM with the selected model and temperature (from gradio UI)
     global llm
     llm = init_chat_model(model_name, model_provider="openai", temperature=temperature)
 
-    # --- STEP 1: GENERATE DRAFT PLAN ---
+    # STEP 1: Fetch original article and show it immediately
     full_text, published = extract_article_text(url)
     original_md = render_article_as_markdown(full_text)
-    # Muotoile ja kutsu dokumentaatio‐promtia
+    # First yield: only show the original article
+    yield "", original_md, "", ""
+
+    # STEP 2: Generate draft plan
     formatted_plan_prompt = plan_prompt_text.format(
         article_text=original_md, published_date=published or "Unknown"
     )
-    print("formatted_plan_prompt ON TÄSSÄ: ", formatted_plan_prompt)
     structured_plan = llm.with_structured_output(NewsDraftPlan)
     draft: NewsDraftPlan = structured_plan.invoke(formatted_plan_prompt)
     draft.markdown = original_md
     draft.url = url
 
-    print("draft ON TÄSSÄ", draft)
-    # Näytä heti alkuperäinen + placeholderit
+    # STEP 3: Show search queries and placeholder for enriched article
     queries = draft.web_search_queries or generate_search_queries(draft)
-    yield (
-        f"**Search queries:** {', '.join(queries)}",
-        original_md,
-        "Generating enriched article…",
-        "",
-    )
+    yield f"**Search queries:** {', '.join(queries)}", original_md, "Generating enriched article…", ""
 
-    # --- STEP 2: WEB SEARCH + FINAL ARTICLE ---
+    # STEP 4: Perform web search and generate final article
     articles = run_web_search(queries)
-    # valmistele web‐materiaalit promtiin
     web_md = "\n\n".join(
         f"## Web search article {i+1}\nURL: {a.url}\n\n{a.markdown}"
         for i, a in enumerate(articles, start=1)
@@ -141,7 +135,7 @@ def process_article_url_stream(
     generated: GeneratedNewsItem = structured_gen.invoke(formatted_gen_prompt)
     enriched_md = render_generated_news(generated)
 
-    # Kerää täsmälliset lähde‐URL:t ja lähdetekstit
+    # Collect source URLs and render source articles
     source_urls = [str(a.url) for a in articles]
     source_md = "\n\n".join(
         f"### Article {i+1}\n\n**URL:** {source_urls[i]}\n\n{a.markdown}"
@@ -149,6 +143,7 @@ def process_article_url_stream(
         if a.markdown
     )
 
+    # Final yield: show enriched article and sources
     yield (
         f"**Search queries:** {', '.join(queries)}\n\n"
         f"**Source URLs:**\n- " + "\n- ".join(source_urls),

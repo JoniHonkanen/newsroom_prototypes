@@ -69,6 +69,7 @@ These are supporting materials from web search. Use them only to enrich the orig
 ## Guidelines
 - Write in a journalistic and neutral tone.
 - Do not copy any article verbatim; synthesize and rewrite.
+- Write the article in the same language as the original article, in this case {language}.
 - Reflect the core idea and summary from the plan.
 - Structure the article with informative headings or subheadings.
 - Use multiple paragraphs with clear flow.
