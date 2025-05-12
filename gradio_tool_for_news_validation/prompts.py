@@ -141,4 +141,7 @@ Go through the following items and confirm if each one is satisfied. If any are 
 
 ### This is the Article to be Reviewed
 {generated_article_markdown}
+
+### Used sources
+{references}
 """

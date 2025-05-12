@@ -72,8 +72,15 @@ class NewsDraftPlan(BaseModel):
 # This model is used to represent the content blocks of the generated news article.
 # Each block can be of different types, such as 'intro', 'text', 'subheading', or 'image'.
 class ContentBlock(BaseModel):
-    type: Literal["headline", "intro", "text", "subheading", "image"] = Field(
-        description="Type of content: 'headline' for the main article title, 'intro' for lead paragraph, 'text' for body, 'subheading' for section title, 'image' for media reference."
+    type: Literal["headline", "intro", "text", "subheading", "image", "reference"] = (
+        Field(
+            description=(
+                "Type of content: 'headline' for the main article title, "
+                "'intro' for lead paragraph, 'text' for body, "
+                "'subheading' for section title, 'image' for media reference, "
+                "'reference' for source citation or reference list."
+            )
+        )
     )
     content: str = Field(
         description="The actual content of the block: plain text, subheading text, or image description/URL."
@@ -160,7 +167,11 @@ class ReviewedNewsItem(BaseModel):
         default_factory=list,
         description="List of issues found during review. Empty if status is OK.",
     )
-    news_as_html: Optional[str] = Field(
+    approval_comment: Optional[str] = Field(
         default=None,
-        description="The full news article rendered in HTML. Present only if the article was revised.",
+        description="Short explanation of why the article was accepted as OK. Present only if status is OK.",
     )
+    #news_as_html: Optional[str] = Field(
+    #    default=None,
+    #    description="The full news article rendered in HTML. Present only if the article was revised.",
+    #)

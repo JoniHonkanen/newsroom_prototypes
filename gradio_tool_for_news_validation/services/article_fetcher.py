@@ -1,5 +1,5 @@
 import requests
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Tag
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
@@ -8,7 +8,6 @@ from typing import List, Dict, Optional, Tuple
 
 
 def extract_article_text(url: str) -> Tuple[List[Dict[str, str]], Optional[str]]:
-
     headers = {
         "User-Agent": (
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
@@ -25,53 +24,36 @@ def extract_article_text(url: str) -> Tuple[List[Dict[str, str]], Optional[str]]
         print("[INFO] Falling back to Selenium...")
         soup = _extract_with_selenium_bs(url)
 
-    # Ainakin ylellä uutinen on <article> tagin sisällä, eli käytetään sitä... jos tagia ei ole niin käytetään koko dokumenttia
-    # <article> tag is used for the main content, if not found, use the entire document
-    article_tag = soup.find("article")
-    if not article_tag:
-        print("[WARNING] <article> tag not found, using entire document")
-        article_tag = soup
-    else:
-        # Poista mahdollinen <footer> artikkelin sisältä
-        # ainakin ylellä footer on <article> tagin sisällä, ja siinä turhaa sisältöä
-        footer = article_tag.find("footer")
-        if footer:
-            footer.decompose()
+    article_tag = soup.find("article") or soup
+    for tag in article_tag.find_all(["footer", "aside"]):
+        tag.decompose()
 
     blocks: List[Dict[str, str]] = []
 
-    # Main heading
-    if h1 := article_tag.find("h1"):
-        text = h1.get_text(strip=True)
-        if text:
-            blocks.append({"type": "title", "content": text})
+    for elem in article_tag.descendants:
+        if not isinstance(elem, Tag):
+            continue
+        if elem.name == "h1":
+            text = elem.get_text(strip=True)
+            if text:
+                blocks.append({"type": "title", "content": text})
+        elif elem.name == "h2":
+            text = elem.get_text(strip=True)
+            if text:
+                blocks.append({"type": "subheading", "content": text})
+        elif elem.name == "p":
+            text = elem.get_text(strip=True)
+            if text:
+                blocks.append({"type": "text", "content": text})
+        elif elem.name == "li":
+            text = elem.get_text(strip=True)
+            if text:
+                blocks.append({"type": "text", "content": text})
+        elif elem.name == "figcaption":
+            text = elem.get_text(strip=True)
+            if text:
+                blocks.append({"type": "image", "content": text})
 
-    # Section headings
-    for h2 in article_tag.find_all("h2"):
-        text = h2.get_text(strip=True)
-        if text:
-            blocks.append({"type": "subheading", "content": text})
-
-    # Paragraphs
-    for p in article_tag.find_all("p"):
-        text = p.get_text(strip=True)
-        if text:
-            blocks.append({"type": "text", "content": text})
-
-    # List items (e.g. fact boxes)
-    for li in article_tag.find_all("li"):
-        text = li.get_text(strip=True)
-        if text:
-            blocks.append({"type": "text", "content": text})
-
-    # Figure captions
-    for fig in article_tag.find_all("figcaption"):
-        text = fig.get_text(strip=True)
-        if text:
-            blocks.append({"type": "image", "content": text})
-            
-    # Publication datetime
-    # Ýlen artikkelissa oli time elementti, jossa class="published"... tämä sen perusteella
     pub_time_tag = soup.find("time")
     publication_time = pub_time_tag.get("datetime") if pub_time_tag else None
 
@@ -79,7 +61,7 @@ def extract_article_text(url: str) -> Tuple[List[Dict[str, str]], Optional[str]]
 
 
 # If requests fails, we use Selenium to extract the content
-#TODO:: THIS FALLBACK IS NOT TESTED YET...
+# TODO:: THIS FALLBACK IS NOT TESTED YET...
 def _extract_with_selenium_bs(url: str) -> BeautifulSoup:
     """
     Uses Selenium to load the page and returns a BeautifulSoup object of its HTML.

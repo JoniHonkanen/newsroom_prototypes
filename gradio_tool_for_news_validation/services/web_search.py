@@ -4,7 +4,7 @@ from typing import List, Dict, Optional
 from urllib.parse import urlparse
 
 import requests
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Tag
 from duckduckgo_search import DDGS
 from duckduckgo_search.exceptions import (
     DuckDuckGoSearchException,
@@ -86,7 +86,6 @@ def run_web_search(queries: List[str], num_results: int = 1) -> List[str]:
 
 def to_structured_article(url: str) -> StructuredSourceArticle:
     try:
-        # Hae ja pakota UTF-8-merkistö
         resp = requests.get(url, headers=HEADERS, timeout=5)
         resp.encoding = "utf-8"
         html = resp.text
@@ -94,43 +93,49 @@ def to_structured_article(url: str) -> StructuredSourceArticle:
     except Exception:
         return None
 
-    # Restrict to <article> if present
     article_tag = soup.find("article") or soup
-    # Remove footer if exists
-    footer = article_tag.find("footer")
-    if footer:
-        footer.decompose()
+
+    for tag in article_tag.find_all(["footer", "aside"]):
+        tag.decompose()
 
     blocks: List[ContentBlockWeb] = []
 
-    if h1 := article_tag.find("h1"):
-        text = h1.get_text(strip=True)
-        if text:
-            blocks.append(ContentBlockWeb(type="title", content=text))
+    for elem in article_tag.descendants:
+        if not isinstance(elem, Tag):
+            continue
 
-    for h2 in article_tag.find_all("h2"):
-        text = h2.get_text(strip=True)
-        if text:
-            blocks.append(ContentBlockWeb(type="subheading", content=text))
+        if elem.name == "h1":
+            text = elem.get_text(strip=True)
+            if text:
+                blocks.append(ContentBlockWeb(type="title", content=text))
 
-    for p in article_tag.find_all("p"):
-        text = p.get_text(strip=True)
-        if text:
-            blocks.append(ContentBlockWeb(type="text", content=text))
+        elif elem.name == "h2":
+            text = elem.get_text(strip=True)
+            if text:
+                blocks.append(ContentBlockWeb(type="subheading", content=text))
 
-    for li in article_tag.find_all("li"):
-        text = li.get_text(strip=True)
-        if text:
-            blocks.append(ContentBlockWeb(type="text", content=text))
+        elif elem.name == "p":
+            text = elem.get_text(strip=True)
+            if text:
+                blocks.append(ContentBlockWeb(type="text", content=text))
 
-    for fig in article_tag.find_all("figcaption"):
-        text = fig.get_text(strip=True)
-        if text:
-            blocks.append(ContentBlockWeb(type="image", content=text))
+        elif elem.name == "li":
+            text = elem.get_text(strip=True)
+            if text:
+                blocks.append(ContentBlockWeb(type="text", content=text))
+
+        elif elem.name == "img":
+            src = elem.get("src")
+            if src:
+                blocks.append(ContentBlockWeb(type="image", content=src))
+
+        elif elem.name == "figcaption":
+            caption = elem.get_text(strip=True)
+            if caption:
+                blocks.append(ContentBlockWeb(type="image", content=caption))
 
     domain = urlparse(url).netloc.replace("www.", "")
     published = extract_published_time(soup)
-
     markdown = render_article_as_markdown(blocks)
 
     return StructuredSourceArticle(
