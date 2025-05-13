@@ -29,7 +29,7 @@ class State(TypedDict):
     generated_news: GeneratedNewsItem
     search_results: List[StructuredSourceArticle]
     queries: List[str]
-    revieved_news: ReviewedNewsItem
+    reviewed_news: ReviewedNewsItem
     html: str
 
 
@@ -83,7 +83,7 @@ def bot_editor_in_chief(state: State) -> dict:
     news: GeneratedNewsItem = state["generated_news"]
     print("\nTÄÄ MENEE PROMPTIIN:")
     print(news)
-    
+
     print("\n\n")
     structured = llm.with_structured_output(ReviewedNewsItem)
     prompt = validation_prompt.format(
@@ -144,7 +144,7 @@ def process_article_url_stream(
     plan_prompt_text: str,
     gen_prompt_text: str,
     validation_prompt_text: str,
-) -> Generator[Tuple[str, str, str, str, str], None, None]:
+) -> Generator[Tuple[str, str, str, str, str, str], None, None]:
     # So agents can use the values... they are global
     global llm, plan_prompt, gen_prompt, validation_prompt
     llm = init_chat_model(model_name, model_provider="openai", temperature=temperature)
@@ -156,7 +156,7 @@ def process_article_url_stream(
     full_text, published = extract_article_text(url)
     # just to quickly show something on the screen
     original_md = render_article_as_markdown(full_text)
-    yield "", original_md, "", "", ""
+    yield "", original_md, "", "", "", ""
 
     # STEP 2 & 4: Delegate planning and generation to the graph
     # Syöttötilaksi riittää URL; graph-solmut käyttävät globaaleja prompt-muuttujia
@@ -166,7 +166,7 @@ def process_article_url_stream(
     # Hae luonnos ja generaattiot
     draft: NewsDraftPlan = final_state["drafts"]
     queries = draft.web_search_queries or generate_search_queries(draft)
-    yield f"**Search queries:** {', '.join(queries)}", original_md, "Generating enriched article…", "", ""
+    yield f"**Search queries:** {', '.join(queries)}", original_md, "Generating enriched article…", "", "", ""
 
     generated: GeneratedNewsItem = final_state["generated_news"]
     enriched_md = render_generated_news(generated)
@@ -180,6 +180,18 @@ def process_article_url_stream(
         if a.markdown
     )
 
+    reviewed: ReviewedNewsItem = final_state["reviewed_news"]
+    if reviewed.status == "OK":
+        review_section = (
+            "**Review status:** OK\n"
+            f"**Approval comment:** {reviewed.approval_comment or '–'}"
+        )
+    else:
+        issues_list = "\n".join(f"- {issue.description}" for issue in reviewed.issues)
+        review_section = (
+            "**Review status:** ISSUES_FOUND\n" "**Issues found:**\n" f"{issues_list}"
+        )
+
     # this need to be same as gradio outputs (at button click part)
     yield (
         f"**Search queries:** {', '.join(queries)}\n\n"
@@ -188,6 +200,7 @@ def process_article_url_stream(
         enriched_md,
         source_md,
         final_state["html"] if "html" in final_state else "",
+        review_section
     )
 
 
@@ -243,6 +256,8 @@ with gr.Blocks(title="News Generator") as demo:
             )
         with gr.Tab("Final Article (HTML)"):
             html_tab = gr.HTML("", label="Final Article", elem_classes=["md-box"])
+        with gr.Tab("Editor in Chief"):
+            editor_in_chief = gr.HTML("", label="Decision", elem_classes=["md-box"])
 
     # Liitä callback; huom. inputs‐listaan nyt myös prompt‐kentät
     gen_btn.click(
@@ -255,7 +270,14 @@ with gr.Blocks(title="News Generator") as demo:
             gen_prompt_in,
             validation_prompt,
         ],
-        outputs=[info_md, orig_md_tab, enrich_md_tab, source_tab, html_tab],
+        outputs=[
+            info_md,
+            orig_md_tab,
+            enrich_md_tab,
+            source_tab,
+            html_tab,
+            editor_in_chief,
+        ],
         show_progress=True,
         queue=True,
     )
