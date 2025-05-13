@@ -34,7 +34,31 @@ class LocationTag(BaseModel):
     region: Optional[str] = Field(description="Region or state, e.g., 'Pirkanmaa'")
     city: Optional[str] = Field(description="City or locality, e.g., 'Akaa'")
 
+#for lagging decisions of journalist agents    
+class AgentReasoning(BaseModel):
+    agent: str = Field(description="Name or identifier of the agent")
+    explanation: str = Field(description="Human-readable explanation of reasoning")
+    
+# This model is used to represent the reasoning behind the editor in chief decision "päätoimittaja". 
+class EditorialReasoning(BaseModel):
+    reviewer: str = Field(description="Identifier of the editor agent")
+    decision: Literal["ACCEPT", "REJECT"] = Field(description="High-level verdict")
+    checked_criteria: List[str] = Field(
+        description="Names of all review criteria evaluated"
+    )
+    failed_criteria: List[str] = Field(
+        description="Subset of checked_criteria that did not pass; empty if OK"
+    )
+    detailed_explanation: str = Field(
+        description="Narrative tying criteria results to the overall decision"
+    )    
 
+class LogReasoning(BaseModel):
+    planning: List[AgentReasoning] = Field(default_factory=list)
+    generator: List[AgentReasoning] = Field(default_factory=list)
+    reviewer: List[EditorialReasoning] = Field(default_factory=list)
+
+# First time used in "bot_get_idea"
 # This model is used to read news articles from the RSS feed and get ideas from them.
 class NewsDraftPlan(BaseModel):
     summary: str = Field(description="A concise summary of the original news article.")
@@ -63,6 +87,13 @@ class NewsDraftPlan(BaseModel):
         default=None, description="Original news as markdown format."
     )
     url: Optional[str] = Field(default=None, description="The full URL of the article.")
+    logging_reasoning: str = Field(
+        description=(
+            "A concise, human-readable explanation by the agent of why it chose the given "
+            "fields and values. This supports transparency and traceability in multi-agent "
+            "decision-making, aids debugging, and provides an audit trail for later analysis."
+        )
+    )
 
     # pydantic will automatically convert enum values to their string representation!!!
     class Config:
@@ -118,6 +149,13 @@ class GeneratedNewsItem(BaseModel):
     markdown: Optional[str] = Field(
         default=None, description="Generated news article in markdown format."
     )
+    logging_reasoning: str = Field(
+        description=(
+            "A concise, human-readable explanation by the agent of why it chose the given "
+            "fields and values. This supports transparency and traceability in multi-agent "
+            "decision-making, aids debugging, and provides an audit trail for later analysis."
+        )
+    )
 
     # pydantic will automatically convert enum values to their string representation!!!
     class Config:
@@ -171,7 +209,8 @@ class ReviewedNewsItem(BaseModel):
         default=None,
         description="Short explanation of why the article was accepted as OK. Present only if status is OK.",
     )
-    #news_as_html: Optional[str] = Field(
+    reasoning: EditorialReasoning
+    # news_as_html: Optional[str] = Field(
     #    default=None,
     #    description="The full news article rendered in HTML. Present only if the article was revised.",
-    #)
+    # )

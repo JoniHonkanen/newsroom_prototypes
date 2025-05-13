@@ -6,7 +6,14 @@ import gradio as gr
 
 # omat importit
 from services.article_fetcher import extract_article_text, render_article_as_markdown
-from schemas import GeneratedNewsItem, NewsDraftPlan, ReviewedNewsItem
+from schemas import (
+    AgentReasoning,
+    EditorialReasoning,
+    GeneratedNewsItem,
+    LogReasoning,
+    NewsDraftPlan,
+    ReviewedNewsItem,
+)
 from services.generate_html import render_generated_news_html
 from services.web_search import (
     generate_search_queries,
@@ -24,13 +31,14 @@ validation_prompt = ""
 
 
 class State(TypedDict):
-    url: str
-    drafts: NewsDraftPlan
-    generated_news: GeneratedNewsItem
-    search_results: List[StructuredSourceArticle]
-    queries: List[str]
-    reviewed_news: ReviewedNewsItem
-    html: str
+    url: str  # URL of the original article
+    drafts: NewsDraftPlan  # Draft plans
+    generated_news: GeneratedNewsItem  # Generated news item
+    search_results: List[StructuredSourceArticle]  # List of source articles
+    queries: List[str]  # List of search queries
+    reviewed_news: ReviewedNewsItem  # Reviewed news item
+    html: str  # HTML representation of the final article
+    log_reasoning: LogReasoning  # for logging agents reasoning
 
 
 def bot_get_idea(state: State) -> dict:
@@ -42,8 +50,17 @@ def bot_get_idea(state: State) -> dict:
     plan: NewsDraftPlan = structured.invoke(
         plan_prompt.format(article_text=md, published_date=published or "Unknown")
     )
+
     plan.markdown = md
     plan.url = link
+
+    # logging reason
+    state["log_reasoning"].planning.append(
+        AgentReasoning(
+            agent="Planning agent",
+            explanation=plan.logging_reasoning,
+        )
+    )
     return {"drafts": plan}
 
 
@@ -75,32 +92,68 @@ def bot_generate_news(state: State) -> dict:
     md = render_generated_news(article)
     article.markdown = md
 
+    # logging reason
+    reason_text = article.logging_reasoning
+    state["log_reasoning"].generator.append(
+        AgentReasoning(
+            agent="News generator agent",
+            explanation=reason_text,
+        )
+    )
+
     return {"generated_news": article, "search_results": articles, "queries": queries}
 
 
 def bot_editor_in_chief(state: State) -> dict:
-    print("AGENT - Validaring and reviewing news")
+    print("AGENT - Validating and reviewing news")
     news: GeneratedNewsItem = state["generated_news"]
-    print("\nTÄÄ MENEE PROMPTIIN:")
-    print(news)
 
-    print("\n\n")
     structured = llm.with_structured_output(ReviewedNewsItem)
     prompt = validation_prompt.format(
         generated_article_markdown=news.markdown,
         references=news.references,
     )
-    print("ITSE PROMPTI:")
-    print(prompt)
-    print("\n\n")
+
     reviewed: ReviewedNewsItem = structured.invoke(prompt)
 
     # lets make HTML for the final article
     news_as_html = render_generated_news_html(news)
-    print("HTML:")
-    print(news_as_html)
-    print(reviewed)
+
+    state["log_reasoning"].reviewer.append(reviewed.reasoning)
+
     return {"reviewed_news": reviewed, "html": news_as_html}
+
+
+# Pistetään lokit nättiin muotoon
+def format_logs(log_reasoning: LogReasoning) -> str:
+    sections = []
+
+    # Planning-agentin lokit
+    if log_reasoning.planning:
+        sections.append("### Planning Agent Logs")
+        for i, r in enumerate(log_reasoning.planning, 1):
+            sections.append(f"**[{i}] {r.agent}**\n{r.explanation}")
+
+    # Generator-agentin lokit
+    if log_reasoning.generator:
+        sections.append("### Generator Agent Logs")
+        for i, r in enumerate(log_reasoning.generator, 1):
+            sections.append(f"**[{i}] {r.agent}**\n{r.explanation}")
+
+    # Reviewer-lokit (rakenne eri)
+    if log_reasoning.reviewer:
+        sections.append("### Reviewer Logs")
+        for i, r in enumerate(log_reasoning.reviewer, 1):
+            block = [
+                f"**[{i}] Reviewer:** {r.reviewer}",
+                f"- **Decision:** {r.decision}",
+                f"- **Checked Criteria:** {', '.join(r.checked_criteria)}",
+                f"- **Failed Criteria:** {', '.join(r.failed_criteria) or 'None'}",
+                f"- **Explanation:**\n{r.detailed_explanation.strip()}",
+            ]
+            sections.append("\n".join(block))
+
+    return "\n\n".join(sections)
 
 
 def render_generated_news(item: GeneratedNewsItem) -> str:
@@ -144,7 +197,7 @@ def process_article_url_stream(
     plan_prompt_text: str,
     gen_prompt_text: str,
     validation_prompt_text: str,
-) -> Generator[Tuple[str, str, str, str, str, str], None, None]:
+) -> Generator[Tuple[str, str, str, str, str, str, str], None, None]:
     # So agents can use the values... they are global
     global llm, plan_prompt, gen_prompt, validation_prompt
     llm = init_chat_model(model_name, model_provider="openai", temperature=temperature)
@@ -156,17 +209,17 @@ def process_article_url_stream(
     full_text, published = extract_article_text(url)
     # just to quickly show something on the screen
     original_md = render_article_as_markdown(full_text)
-    yield "", original_md, "", "", "", ""
+    yield "", original_md, "", "", "", "", ""
 
     # STEP 2 & 4: Delegate planning and generation to the graph
     # Syöttötilaksi riittää URL; graph-solmut käyttävät globaaleja prompt-muuttujia
-    initial_state = {"url": url}
-    final_state = graph.invoke(initial_state)  # :contentReference[oaicite:0]{index=0}
+    initial_state = {"url": url, "log_reasoning": LogReasoning()}
+    final_state = graph.invoke(initial_state)
 
     # Hae luonnos ja generaattiot
     draft: NewsDraftPlan = final_state["drafts"]
     queries = draft.web_search_queries or generate_search_queries(draft)
-    yield f"**Search queries:** {', '.join(queries)}", original_md, "Generating enriched article…", "", "", ""
+    yield f"**Search queries:** {', '.join(queries)}", original_md, "Generating enriched article…", "", "", "", ""
 
     generated: GeneratedNewsItem = final_state["generated_news"]
     enriched_md = render_generated_news(generated)
@@ -192,6 +245,9 @@ def process_article_url_stream(
             "**Review status:** ISSUES_FOUND\n" "**Issues found:**\n" f"{issues_list}"
         )
 
+    # Get logs from state
+    formatted_logs = format_logs(final_state["log_reasoning"])
+
     # this need to be same as gradio outputs (at button click part)
     yield (
         f"**Search queries:** {', '.join(queries)}\n\n"
@@ -200,7 +256,8 @@ def process_article_url_stream(
         enriched_md,
         source_md,
         final_state["html"] if "html" in final_state else "",
-        review_section
+        review_section,
+        formatted_logs,
     )
 
 
@@ -258,6 +315,8 @@ with gr.Blocks(title="News Generator") as demo:
             html_tab = gr.HTML("", label="Final Article", elem_classes=["md-box"])
         with gr.Tab("Editor in Chief"):
             editor_in_chief = gr.HTML("", label="Decision", elem_classes=["md-box"])
+        with gr.Tab("Logs"):
+            logs = gr.Markdown("", label="Logging...", elem_classes=["md-box"])
 
     # Liitä callback; huom. inputs‐listaan nyt myös prompt‐kentät
     gen_btn.click(
@@ -277,6 +336,7 @@ with gr.Blocks(title="News Generator") as demo:
             source_tab,
             html_tab,
             editor_in_chief,
+            logs,
         ],
         show_progress=True,
         queue=True,
