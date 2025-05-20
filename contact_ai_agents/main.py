@@ -6,10 +6,19 @@ from imapclient import IMAPClient
 from email.message import EmailMessage, Message
 from dotenv import load_dotenv
 from typing import Any, Dict, List, Tuple, Optional
+from mailparser_reply import EmailReplyParser
 
-from database.db import init_db, store_sent_email, store_reply
+from database.db import (
+    init_db,
+    store_sent_email,
+    store_reply,
+    inspect_db,
+    fetch_full_email_thread,
+)
 
 load_dotenv()
+
+parser = EmailReplyParser(languages=['en','fi'])
 
 # HOW THIS SHOULD WORK
 # 1. AGENT SEND EMAIL AND ASK QUESTIONS RELATED TO NEWS
@@ -141,8 +150,11 @@ def send_and_store_email(data: dict, db_path: str = "test.db") -> tuple[bool, st
 # READING EMAILS
 # This function reads emails from the inbox using the IMAP protocol.
 def read_email_tool(
-    folder: str = "INBOX", unseen_only: bool = True
+    folder: str = "INBOX", unseen_only: bool = True, conn=None
 ) -> List[Dict[str, Any]]:
+    if conn is None:
+        conn = init_db("test.db")
+
     print("Reading emails...")
     host: str = os.environ["IMAP_HOST_GMAIL"]
     port_str: str = os.environ["IMAP_PORT"]
@@ -157,65 +169,75 @@ def read_email_tool(
     with IMAPClient(host, port) as client:
         client.login(user, pwd)
 
-        # we can delete this, but it is good to check if we are using the right folder
         available_folders = [f[2] for f in client.list_folders()]
+        print(f"Available folders: {available_folders}")
         if folder not in available_folders:
             raise ValueError(
                 f"Folder '{folder}' not found. Available folders: {available_folders}"
             )
-        print(f"Available folders: {available_folders}")
         client.select_folder(folder)
-        print(f"Selected folder: {folder}")
-        # check possible criteria
-        print(f"CHECK CRITERIES:")
-        print(client.capabilities())
 
-        criteria: str = "UNSEEN" if unseen_only else "ALL"
-        uids: List[int] = client.search(criteria)
-
+        criteria = "UNSEEN" if unseen_only else "ALL"
+        print(f"Searching for emails with criteria: {criteria}")
+        uids = client.search(criteria)
         if not uids:
             return []
-        print(f"Found {len(uids)} matching messages")
-        uids = uids[-5:]  # rajoita esim. viimeiseen 5 viestiin
-        print(f"Processing UIDs: {uids}")
-        if not uids:
-            print("No new emails found.")
-            return []
 
+        uids = uids[-5:]
+        print(f"Found {len(uids)} emails, processing the last 5...")
         result: List[Dict[str, Any]] = []
+
         for uid, data in client.fetch(uids, ["RFC822"]).items():
-            print(f"Processing message UID: {uid}")
             raw = data.get(b"RFC822")
             if not isinstance(raw, (bytes, bytearray)):
                 continue
             msg = email.message_from_bytes(raw)
 
-            # we are only interested in replies
             if not is_reply(msg):
                 print("Skipping: not a reply.")
                 continue
+            
+            raw = _extract_body(msg)
+            clean = clean_reply_body(raw)
+            
+            print("RAW: \n", raw)
+            print("CLEAN: \n", clean)
 
-            result.append(
-                {
-                    "uid": uid,
-                    "from": msg["From"],
-                    "subject": msg["Subject"],
-                    "in_reply_to": msg.get("In-Reply-To"),
-                    "references": msg.get("References"),
-                    "body": _extract_body(msg),
-                }
-            )
+            reply = {
+                "uid": uid,
+                "from": msg["From"],
+                "subject": msg["Subject"],
+                "in_reply_to": msg.get("In-Reply-To"),
+                "references_header": msg.get("References"),
+                "body": clean,
+            }
 
-        print(f"Returning {len(result)} emails.")
-        print("Result:")
-        for r in result:
-            print(f"UID: {r['uid']}")
-            print(f"From: {r['from']}")
-            print(f"Subject: {r['subject']}")
-            print(f"In-Reply-To: {r['in_reply_to']}")
-            print(f"References: {r['references']}")
-            print(f"Body: {r['body']}")
-            print("-" * 40)
+            print("REPLY: \n", reply)
+
+            # tallenna vastaus ja linkitä alkuperäiseen viestiin
+            stored_id, email_id, reply_dict = store_reply(conn, reply)
+            if stored_id is None:
+                print("Vastaus oli jo tallennettu, ohitetaan.")
+                continue
+            
+            #id of original message (what we sent and where is all the questions)
+            orig_msg_id = reply_dict["in_reply_to"]
+            if email_id is None:
+                print("Ei alkuperäistä viestiä, ei linkitetty.")
+                # ota ensimmäinen token references_headerista
+                tokens = reply_dict["references_header"].split()
+                if tokens:
+                    orig_msg_id = tokens[0]
+            
+            print("ORIGINAL MESSAGE ID: ", orig_msg_id)
+
+            thread_data = fetch_full_email_thread(conn, orig_msg_id)
+            print("THREAD DATA: \n", thread_data)
+            if thread_data:
+                summary_text = build_analysis_input(thread_data)
+                print("Thread data:", thread_data)
+                print("Summary text:", summary_text)
+            result.append(reply)
 
         return result
 
@@ -223,6 +245,22 @@ def read_email_tool(
 # we are only interested in replies
 def is_reply(msg: Message) -> bool:
     return bool(msg.get("In-Reply-To") or msg.get("References"))
+
+def clean_reply_body(body: str) -> str:
+    return parser.parse_reply(text=body) or body
+
+#OUTPUT FROM THIS IS WHAT WE WANT TO SEND LLM!
+#IT INCLUDES ORIGINAL QUESTIONS AND ALL THE REPLIES
+def build_analysis_input(thread: dict) -> str:
+    lines = [f"Aihe: {thread['subject']}\n", "QUESTIONS:\n"]
+    for q in thread["questions"]:
+        lines.append(f"{q['position']}. ({q['topic']}) {q['question']}")
+    lines.append("\nANSWERS:\n")
+    for r in thread["replies"]:
+        lines.append(f"-- {r['from']} @ {r['received_at']}")
+        lines.append(r["body"].strip())
+        lines.append("")
+    return "\n".join(lines)
 
 
 def _extract_body(msg: Message) -> str:
@@ -307,13 +345,14 @@ def auto_link_urls(text: str) -> str:
 
 
 if __name__ == "__main__":
-    #success, message, msg_id = send_and_store_email(mockdata, db_path="test.db")
-    #if success:
+    # success, message, msg_id = send_and_store_email(mockdata, db_path="test.db")
+    # if success:
     #   print(message)
-    #else:
+    # else:
     #   print(f"Virhe sähköpostin lähetyksessä: {message}")
 
     read_email_tool(
         folder="INBOX",
         unseen_only=True,
     )
+    #inspect_db("test.db")
