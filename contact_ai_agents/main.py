@@ -1,9 +1,13 @@
+import re
 import os, smtplib
 import email
-from imapclient import IMAPClient
-from email.message import EmailMessage
-from dotenv import load_dotenv
 import uuid
+from imapclient import IMAPClient
+from email.message import EmailMessage, Message
+from dotenv import load_dotenv
+from typing import Any, Dict, List, Tuple, Optional
+
+from database.db import init_db, store_sent_email, store_reply
 
 load_dotenv()
 
@@ -14,30 +18,91 @@ load_dotenv()
 # 4. WE SAVE REPLY TO DATABASE AND LINK IT TO THE ORIGINAL MESSAGE
 # 5. SEND THANKS MESSAGE TO THE USER :)
 
+mockdata: dict = {
+    "recipient": "joni.j.honkanen@tuni.fi",
+    "subject": "Kysymyksiä Helsingin kirkkojen pääsymaksuista – journalistinen jatkotutkimus",
+    "intro": (
+        "Hei,\n\n"
+        "Teen juttua Helsingin keskustan kirkkojen pääsymaksuista, joita aletaan periä kesällä "
+        "ulkopaikkakuntalaisilta vierailijoilta. Tuloilla on tarkoitus kattaa muun muassa siivous- "
+        "ja henkilöstökuluja.\n\n"
+        "Haluaisin kysyä muutaman tarkentavan kysymyksen aiheeseen liittyen:"
+    ),
+    "questions": [
+        {
+            "topic": "Pääsymaksujen vaikutus",
+            "questions": [
+                "Miten arvioitte pääsymaksujen vaikuttavan kirkkojen kävijämääriin ja kävijäkokemukseen?"
+            ],
+        },
+        {
+            "topic": "Kirkkopassi",
+            "questions": [
+                "Miten kirkkopassi toimii käytännössä, ja miten sen käyttöä valvotaan?"
+            ],
+        },
+        {
+            "topic": "Taloudellinen tavoite",
+            "questions": [
+                "Kuinka suuren osan toiminnan kustannuksista pääsymaksuilla arvioidaan katettavan?"
+            ],
+        },
+        {
+            "topic": "Kirkon avoimuus",
+            "questions": [
+                "Miten maksullisuus sovitetaan yhteen kirkon periaatteiden, kuten avoimuuden, kanssa?"
+            ],
+        },
+    ],
+    "outro": (
+        "Kiitos ajastanne! Vastaukset käsitellään osana tekoälyavusteista tutkimusta, jossa tekoäly toimii journalistina."
+        "https://www.tuni.fi/fi/tutkimus/tekoalyn-johtama-uutistoimitus"
+    ),
+    "signature": ("Teppo Tekoälyjournalisti\n" "– tutkimushanke Tampereen yliopisto"),
+}
+
 
 # SENDING EMAILS
 # This function sends an email using the SMTP protocol.
-def send_email_tool(to: str, subject: str, body: str) -> str:
+def send_email_tool(
+    to: str, subject: str, plain_text: str, html_body: str
+) -> Tuple[bool, str, str]:
+    # pakolliset ympäristömuuttujat, KeyError jos puuttuu
+    email_host: str = os.environ["EMAIL_HOST_GMAIL"]
+    email_port_str: str = os.environ["EMAIL_PORT"]
+    email_address_sender: str = os.environ["EMAIL_ADDRESS_GMAIL"]
+    email_password: str = os.environ["EMAIL_PASSWORD_GMAIL"]
+
+    try:
+        email_port = int(email_port_str)
+    except ValueError:
+        return False, "Invalid EMAIL_PORT (must be an integer)", "None"
+
     msg = EmailMessage()
-    msg["From"] = os.getenv("EMAIL_ADDRESS_GMAIL")
+    msg["From"] = email_address_sender
     msg["To"] = to
     msg["Subject"] = subject
-    msg.set_content(body)
-    msg["Message-ID"] = generate_message_id()
+    # best practice is to use plain text and html body, so plain text is used as fallback
+    msg.set_content(plain_text)
+    msg.add_alternative(html_body, subtype="html")
 
-    with smtplib.SMTP(
-        os.getenv("EMAIL_HOST_GMAIL"), int(os.getenv("EMAIL_PORT"))
-    ) as smtp:
-        smtp.starttls()
-        smtp.login(os.getenv("EMAIL_ADDRESS_GMAIL"), os.getenv("EMAIL_PASSWORD_GMAIL"))
-        smtp.send_message(msg)
-    return f"Email sent to {to}"
+    msg_id = generate_message_id()
+    msg["Message-ID"] = msg_id
+
+    try:
+        with smtplib.SMTP(email_host, email_port) as smtp:
+            smtp.starttls()
+            smtp.login(email_address_sender, email_password)
+            smtp.send_message(msg)
+        return True, f"Email sent to {to}", msg_id
+    except Exception as e:
+        return False, f"Failed to send email: {e}", "None"
 
 
 # We want to generate a unique message ID for each email we send and store it to the database.
 # We use this id to check if the received email is reply to our email.
 # example: Message-ID: <2c8a1d42-cd1b-4d2f-a7d5-3ae6f69a78bd@example.com>
-def generate_message_id(domain: str = None) -> str:
+def generate_message_id(domain: Optional[str] = None) -> str:
     if domain is None:
         email_addr = os.getenv("EMAIL_ADDRESS_GMAIL", "example@example.com")
         domain = email_addr.split("@")[-1]
@@ -45,15 +110,54 @@ def generate_message_id(domain: str = None) -> str:
     return f"<{unique_id}@{domain}>"
 
 
+# first send email and then store it to the database
+def send_and_store_email(data: dict, db_path: str = "test.db") -> tuple[bool, str, str]:
+
+    conn = init_db(db_path)
+
+    plain_text, html_body = build_email_body(data)
+    to = data["recipient"]
+    subject = data["subject"]
+
+    questions = [
+        (block["topic"], q) for block in data["questions"] for q in block["questions"]
+    ]
+
+    success, message, msg_id = send_email_tool(
+        to=to,
+        subject=subject,
+        plain_text=plain_text,
+        html_body=html_body,
+    )
+
+    print(success, message, msg_id)
+
+    if success:
+        store_sent_email(conn, msg_id, to, subject, questions)
+
+    return success, message, msg_id
+
+
 # READING EMAILS
 # This function reads emails from the inbox using the IMAP protocol.
-def read_email_tool(folder: str = "INBOX", unseen_only: bool = True) -> list[dict]:
+def read_email_tool(
+    folder: str = "INBOX", unseen_only: bool = True
+) -> List[Dict[str, Any]]:
     print("Reading emails...")
-    host, port = os.getenv("IMAP_HOST_GMAIL"), int(os.getenv("IMAP_PORT"))
-    user, pwd = os.getenv("EMAIL_ADDRESS_GMAIL"), os.getenv("EMAIL_PASSWORD_GMAIL")
+    host: str = os.environ["IMAP_HOST_GMAIL"]
+    port_str: str = os.environ["IMAP_PORT"]
+    user: str = os.environ["EMAIL_ADDRESS_GMAIL"]
+    pwd: str = os.environ["EMAIL_PASSWORD_GMAIL"]
+
+    try:
+        port: int = int(port_str)
+    except ValueError:
+        raise ValueError("Invalid IMAP_PORT (must be an integer)")
+
     with IMAPClient(host, port) as client:
         client.login(user, pwd)
 
+        # we can delete this, but it is good to check if we are using the right folder
         available_folders = [f[2] for f in client.list_folders()]
         if folder not in available_folders:
             raise ValueError(
@@ -66,8 +170,11 @@ def read_email_tool(folder: str = "INBOX", unseen_only: bool = True) -> list[dic
         print(f"CHECK CRITERIES:")
         print(client.capabilities())
 
-        criteria = ["UNSEEN"] if unseen_only else ["ALL"]
-        uids = client.search(criteria)
+        criteria: str = "UNSEEN" if unseen_only else "ALL"
+        uids: List[int] = client.search(criteria)
+
+        if not uids:
+            return []
         print(f"Found {len(uids)} matching messages")
         uids = uids[-5:]  # rajoita esim. viimeiseen 5 viestiin
         print(f"Processing UIDs: {uids}")
@@ -75,10 +182,13 @@ def read_email_tool(folder: str = "INBOX", unseen_only: bool = True) -> list[dic
             print("No new emails found.")
             return []
 
-        result = []
+        result: List[Dict[str, Any]] = []
         for uid, data in client.fetch(uids, ["RFC822"]).items():
             print(f"Processing message UID: {uid}")
-            msg = email.message_from_bytes(data[b"RFC822"])
+            raw = data.get(b"RFC822")
+            if not isinstance(raw, (bytes, bytearray)):
+                continue
+            msg = email.message_from_bytes(raw)
 
             # we are only interested in replies
             if not is_reply(msg):
@@ -99,6 +209,7 @@ def read_email_tool(folder: str = "INBOX", unseen_only: bool = True) -> list[dic
         print(f"Returning {len(result)} emails.")
         print("Result:")
         for r in result:
+            print(f"UID: {r['uid']}")
             print(f"From: {r['from']}")
             print(f"Subject: {r['subject']}")
             print(f"In-Reply-To: {r['in_reply_to']}")
@@ -110,31 +221,98 @@ def read_email_tool(folder: str = "INBOX", unseen_only: bool = True) -> list[dic
 
 
 # we are only interested in replies
-def is_reply(msg: email.message.Message) -> bool:
+def is_reply(msg: Message) -> bool:
     return bool(msg.get("In-Reply-To") or msg.get("References"))
 
 
-def _extract_body(msg) -> str:
-    print("Extracting body...")
+def _extract_body(msg: Message) -> str:
     if msg.is_multipart():
         for part in msg.walk():
             if part.get_content_type() == "text/plain":
-                charset = part.get_content_charset() or "utf-8"
-                try:
-                    return part.get_payload(decode=True).decode(
-                        charset, errors="replace"
-                    )
-                except Exception as e:
-                    return f"[Decode error: {e}]"
+                charset: str = part.get_content_charset() or "utf-8"
+                payload = part.get_payload(decode=True)
+                if isinstance(payload, (bytes, bytearray)):
+                    try:
+                        return payload.decode(charset, errors="replace")
+                    except Exception as e:
+                        return f"[Decode error: {e}]"
+                if isinstance(payload, str):
+                    return payload
     else:
-        charset = msg.get_content_charset() or "utf-8"
-        try:
-            return msg.get_payload(decode=True).decode(charset, errors="replace")
-        except Exception as e:
-            return f"[Decode error: {e}]"
+        charset: str = msg.get_content_charset() or "utf-8"
+        payload = msg.get_payload(decode=True)
+        if isinstance(payload, (bytes, bytearray)):
+            try:
+                return payload.decode(charset, errors="replace")
+            except Exception as e:
+                return f"[Decode error: {e}]"
+        if isinstance(payload, str):
+            return payload
+    # if we get here, we have no body
+    return ""
+
+
+# We extract the MOCKDATA and build the email body
+# best practice is to use plain text and html body, so plain text is used as fallback
+def build_email_body(data: dict) -> tuple[str, str]:
+    # Plain text -versio
+    plain_lines = [data["intro"], ""]
+    for topic_block in data["questions"]:
+        for question in topic_block["questions"]:
+            plain_lines.append(f"- {question}")
+        plain_lines.append("")
+    plain_lines.append(data.get("outro", ""))
+    plain_text = "\n".join(plain_lines)
+
+    # HTML-versio
+    # 1 intro
+    # 2 questions
+    # 3 outro
+    # 4 signature
+    html_lines = [
+        "<html><head><style>",
+        "body { font-family: sans-serif; font-size: 16px; line-height: 1.6; color: #000; }",
+        "ol { padding-left: 20px; margin-top: 1em; }",
+        ".outro { margin-top: 2em; color: #4e008e; font-family: Georgia, serif; }",
+        ".signature {",
+        "  font-family: Times, 'Times New Roman', serif;",
+        "  font-style: italic;",
+        "  margin-top: 2em;",
+        "  white-space: pre-line;",
+        "}",
+        "</style></head><body>",
+        f"<p>{data['intro'].replace(chr(10), '<br>')}</p>",
+        "<ol>",
+    ]
+    for topic_block in data["questions"]:
+        for question in topic_block["questions"]:
+            html_lines.append(f"<li>{question}</li>")
+    html_lines.append("</ol>")
+    # now we detect if there is a link in the outro, but maybe we can hardcode these in the future
+    outro_html = auto_link_urls(data.get("outro", "")).replace("\n", "<br>")
+    html_lines.append(f"<p class='outro'>{outro_html}</p>")
+    html_lines.append(
+        f"<p class='signature'>{data.get('signature', '').replace(chr(10), '<br>')}</p>"
+    )
+    html_lines.append("</body></html>")
+
+    html_text = "\n".join(html_lines)
+
+    return plain_text, html_text
+
+
+def auto_link_urls(text: str) -> str:
+    url_regex = re.compile(r"(https?://[^\s]+)")
+    return url_regex.sub(r'<br><a href="\1">\1</a>', text)
 
 
 if __name__ == "__main__":
+    #success, message, msg_id = send_and_store_email(mockdata, db_path="test.db")
+    #if success:
+    #   print(message)
+    #else:
+    #   print(f"Virhe sähköpostin lähetyksessä: {message}")
+
     read_email_tool(
         folder="INBOX",
         unseen_only=True,
