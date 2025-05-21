@@ -1,8 +1,43 @@
 # EMAIL CONFIGURATION
 
-This project includes an agent capable of **sending and reading emails** using SMTP and IMAP. To enable email functionality, follow these steps:
+This project includes **sending and reading emails** using SMTP and IMAP. To enable email functionality, follow these steps:
 
-## 1. Required Environment Variables
+---
+
+## ARCHITECTURE OVERVIEW
+
+![Email Contact System](plans/contact_system_email.png)
+
+- Sends email inquiries related to a specific news item
+- Recipients can respond freely via email
+- All messages and responses are stored in a structured database
+- Answers are extracted and forwarded to an LLM for automated analysis or summary generation
+
+---
+
+## DATABASE STRUCTURE
+
+The system uses a normalized SQLite database consisting of the following tables:
+
+![Email Tables](plans/email_tables.png)
+
+> - `sent_emails.news_id` links the email to the related news article  
+> - `questions` are stored separately for structured referencing  
+> - `replies` may contain multiple responses per email  
+
+---
+
+## SETUP INSTRUCTIONS
+
+To install the required dependencies and run the project in isolation, create a Python virtual environment:
+### 1. Create and activate virtual environment
+python -m venv .venv
+.venv\Scripts\activate
+
+### 2. Install required packages
+pip install -r requirements.txt
+
+## 3. Required Environment Variables
 
 Create a `.env` file in the project root with the following variables:
 
@@ -29,7 +64,7 @@ IMAP_PORT=993
 
 > **Note:** You can switch between Gmail and Outlook accounts by selecting the appropriate configuration in the code.
 
-## 2. Gmail App Password Setup (Required for Gmail accounts) 
+## 4. Gmail App Password Setup (Required for Gmail accounts) 
 
 If you're using Gmail, a regular password will **not work** with SMTP/IMAP due to security policies. You **must use an App Password**.
 

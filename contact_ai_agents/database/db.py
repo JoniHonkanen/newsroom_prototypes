@@ -12,7 +12,8 @@ def init_db(path):
         message_id TEXT UNIQUE NOT NULL,
         recipient TEXT NOT NULL,
         subject TEXT NOT NULL,
-        sent_at TEXT DEFAULT CURRENT_TIMESTAMP
+        sent_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        news_id INTEGER NOT NULL
     );
     CREATE TABLE IF NOT EXISTS questions (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -37,12 +38,12 @@ def init_db(path):
     return conn
 
 
-def store_sent_email(conn, message_id, recipient, subject, questions):
+def store_sent_email(conn, message_id, recipient, subject, questions, news_id):
 
     cur = conn.cursor()
     cur.execute(
-        "INSERT INTO sent_emails (message_id, recipient, subject) VALUES (?, ?, ?)",
-        (message_id, recipient, subject),
+        "INSERT INTO sent_emails (message_id, recipient, subject, news_id) VALUES (?, ?, ?, ?)",
+        (message_id, recipient, subject, news_id),
     )
     email_id = cur.lastrowid
     for i, (topic, qtext) in enumerate(questions, start=1):

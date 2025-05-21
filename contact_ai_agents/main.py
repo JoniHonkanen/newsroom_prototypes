@@ -18,7 +18,7 @@ from database.db import (
 
 load_dotenv()
 
-parser = EmailReplyParser(languages=['en','fi'])
+parser = EmailReplyParser(languages=["en", "fi"])
 
 # HOW THIS SHOULD WORK
 # 1. AGENT SEND EMAIL AND ASK QUESTIONS RELATED TO NEWS
@@ -28,6 +28,7 @@ parser = EmailReplyParser(languages=['en','fi'])
 # 5. SEND THANKS MESSAGE TO THE USER :)
 
 mockdata: dict = {
+    "news_id": 42,  # just an example of news id
     "recipient": "joni.j.honkanen@tuni.fi",
     "subject": "Kysymyksiä Helsingin kirkkojen pääsymaksuista – journalistinen jatkotutkimus",
     "intro": (
@@ -142,7 +143,7 @@ def send_and_store_email(data: dict, db_path: str = "test.db") -> tuple[bool, st
     print(success, message, msg_id)
 
     if success:
-        store_sent_email(conn, msg_id, to, subject, questions)
+        store_sent_email(conn, msg_id, to, subject, questions, data["news_id"])
 
     return success, message, msg_id
 
@@ -196,10 +197,10 @@ def read_email_tool(
             if not is_reply(msg):
                 print("Skipping: not a reply.")
                 continue
-            
+
             raw = _extract_body(msg)
             clean = clean_reply_body(raw)
-            
+
             print("RAW: \n", raw)
             print("CLEAN: \n", clean)
 
@@ -212,15 +213,13 @@ def read_email_tool(
                 "body": clean,
             }
 
-            print("REPLY: \n", reply)
-
             # tallenna vastaus ja linkitä alkuperäiseen viestiin
             stored_id, email_id, reply_dict = store_reply(conn, reply)
             if stored_id is None:
                 print("Vastaus oli jo tallennettu, ohitetaan.")
                 continue
-            
-            #id of original message (what we sent and where is all the questions)
+
+            # id of original message (what we sent and where is all the questions)
             orig_msg_id = reply_dict["in_reply_to"]
             if email_id is None:
                 print("Ei alkuperäistä viestiä, ei linkitetty.")
@@ -228,12 +227,10 @@ def read_email_tool(
                 tokens = reply_dict["references_header"].split()
                 if tokens:
                     orig_msg_id = tokens[0]
-            
-            print("ORIGINAL MESSAGE ID: ", orig_msg_id)
 
             thread_data = fetch_full_email_thread(conn, orig_msg_id)
-            print("THREAD DATA: \n", thread_data)
             if thread_data:
+                # This summary_text is the data we want to send to LLM
                 summary_text = build_analysis_input(thread_data)
                 print("Thread data:", thread_data)
                 print("Summary text:", summary_text)
@@ -246,11 +243,13 @@ def read_email_tool(
 def is_reply(msg: Message) -> bool:
     return bool(msg.get("In-Reply-To") or msg.get("References"))
 
+
 def clean_reply_body(body: str) -> str:
     return parser.parse_reply(text=body) or body
 
-#OUTPUT FROM THIS IS WHAT WE WANT TO SEND LLM!
-#IT INCLUDES ORIGINAL QUESTIONS AND ALL THE REPLIES
+
+# OUTPUT FROM THIS IS WHAT WE WANT TO SEND LLM!
+# IT INCLUDES ORIGINAL QUESTIONS AND ALL THE REPLIES
 def build_analysis_input(thread: dict) -> str:
     lines = [f"Aihe: {thread['subject']}\n", "QUESTIONS:\n"]
     for q in thread["questions"]:
@@ -263,6 +262,7 @@ def build_analysis_input(thread: dict) -> str:
     return "\n".join(lines)
 
 
+# GET BODY OF THE REPLY
 def _extract_body(msg: Message) -> str:
     if msg.is_multipart():
         for part in msg.walk():
@@ -355,4 +355,4 @@ if __name__ == "__main__":
         folder="INBOX",
         unseen_only=True,
     )
-    #inspect_db("test.db")
+    # inspect_db("test.db")
