@@ -10,3 +10,4 @@ class Message(BaseModel):
 class CallState(TypedDict):
     messages: List[Message]
     user_input: str
+    

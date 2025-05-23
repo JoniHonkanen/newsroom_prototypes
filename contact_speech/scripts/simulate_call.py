@@ -19,6 +19,7 @@ if __name__ == "__main__":
     #    "../test_speech/hei_hei.ulaw",
     #]
     audio_sequence = [
+        "../test_speech/sopii_kylla.ulaw",
         "../test_speech/vastaus1.ulaw",
         "../test_speech/hei_hei.ulaw",
     ]

@@ -55,9 +55,7 @@ async def handle_incoming_call(request: Request):
     """Handle incoming call and return TwiML response to connect to Media Stream."""
     response = VoiceResponse()
     # <Say> punctuation to improve text-to-speech flow
-    response.say("Asmaa is cute and nice woman. Kisses and hugs from Joni")
-    response.pause(length=1)
-    response.say("O.K. you can start talking!")
+    response.say("Hello! This is AI calling you. I have something to ask you.")
     host = request.url.hostname
     connect = Connect()
     print(f"TÄMÄ ON HOST: {host}")
@@ -78,7 +76,7 @@ async def handle_media_stream(websocket: WebSocket):
     await websocket.accept()
 
     async with websockets.connect(
-        "wss://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview-2024-10-01",
+        "wss://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview",
         additional_headers={
             "Authorization": f"Bearer {OPENAI_API_KEY}",
             "OpenAI-Beta": "realtime=v1",
@@ -105,6 +103,8 @@ async def handle_media_stream(websocket: WebSocket):
                             {
                                 "speaker": "user",
                                 "timestamp": data["media"].get("timestamp"),
+                                # Voit halutessasi logittaa myös käyttäjän transkription,
+                                # jos Twilio lähettää sen tai käytät erillistä STT-palvelua
                             }
                         )
 
@@ -148,6 +148,17 @@ async def handle_media_stream(websocket: WebSocket):
                 async for openai_message in openai_ws:
                     response = json.loads(openai_message)
 
+                    if (
+                        response.get("type")
+                        == "conversation.item.input_audio_transcription.completed"
+                    ):
+                        transcript_text = response.get("transcript", "").strip()
+                        print(f"🎤 Käyttäjä sanoi: {transcript_text}")
+                        if transcript_text:
+                            conversation_log.append(
+                                {"speaker": "user", "text": transcript_text}
+                            )
+
                     if response["type"] in LOG_EVENT_TYPES:
                         print(f"[EVENT] {response['type']}", response)
 
@@ -177,6 +188,9 @@ async def handle_media_stream(websocket: WebSocket):
                                                 "text": part["transcript"],
                                             }
                                         )
+                                        ### LISÄTTY PRINTTI ###
+                                        print(f"OpenAI Assistant: {part['transcript']}")
+                                        ######################
 
                     # Lähetä audiopalasia
                     if response.get("type") == "response.audio.delta":
@@ -213,12 +227,14 @@ async def handle_media_stream(websocket: WebSocket):
             except Exception as e:
                 print(f"Error in send_to_twilio: {e}")
 
-        async def send_mark(connection, stream_sid):
+        async def send_mark(
+            connection, stream_sid_local
+        ):  # Nimi muutettu konfliktin välttämiseksi
             """Send mark events to Twilio to indicate audio chunks have been sent."""
-            if stream_sid:
+            if stream_sid_local:  # Käytetään paikallista muuttujaa
                 mark_event = {
                     "event": "mark",
-                    "streamSid": stream_sid,
+                    "streamSid": stream_sid_local,  # Käytetään paikallista muuttujaa
                     "mark": {"name": "responsePart"},
                 }
                 await connection.send_json(mark_event)
@@ -228,7 +244,7 @@ async def handle_media_stream(websocket: WebSocket):
 
         async def handle_speech_started_event():
             """Truncate AI response when user starts speaking."""
-            nonlocal response_start_timestamp_twilio, last_assistant_item
+            nonlocal response_start_timestamp_twilio, last_assistant_item, stream_sid  # stream_sid lisätty nonlocal
             if response_start_timestamp_twilio is not None:
                 elapsed = latest_media_timestamp - response_start_timestamp_twilio
             else:
@@ -266,7 +282,7 @@ async def send_initial_conversation_item(openai_ws):
             "content": [
                 {
                     "type": "input_text",
-                    "text": "Greet the user with 'Hello there! I am an AI voice assistant powered by Twilio and the OpenAI Realtime API. You can ask me for facts, jokes, or anything you can imagine. How can I help you?'",
+                    "text": "Hello! This is Pekka, who is calling and what do you want?",
                 }
             ],
         },
@@ -284,6 +300,7 @@ async def initialize_session(openai_ws):
             "turn_detection": {"type": "server_vad"},
             "input_audio_format": "g711_ulaw",
             "output_audio_format": "g711_ulaw",
+            "input_audio_transcription": {"model": "whisper-1"},
             "voice": VOICE,
             "instructions": SYSTEM_MESSAGE,
             "modalities": ["text", "audio"],
@@ -307,8 +324,8 @@ def call_and_connect():
 
     # Make sure to replace <ngrok-osoitteesi> with your actual ngrok address
     call = twilio_client.calls.create(
-        to="+358403202768",
-        # to="+358405434117",
+        # to="+358403202768",
+        to="+358405434117",
         from_=twilio_phone_number,
         url="https://5cca-88-112-228-107.ngrok-free.app/incoming-call",
     )
