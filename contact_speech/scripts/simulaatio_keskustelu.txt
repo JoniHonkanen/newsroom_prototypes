@@ -1,6 +1,6 @@
 user: ../test_speech/sopii_kylla.ulaw
-assistant: [AI responded]
+assistant: [no response received]
 user: ../test_speech/vastaus1.ulaw
-assistant: [AI responded]
+assistant: [no response received]
 user: ../test_speech/hei_hei.ulaw
 assistant: [no response received]

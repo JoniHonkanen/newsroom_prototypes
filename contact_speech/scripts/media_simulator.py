@@ -40,7 +40,9 @@ async def simulate_conversation(audio_files: list[str], uri: str):
             })
 
             seg = AudioSegment.from_file(file_path, format="mulaw", frame_rate=8000, channels=1)
-            chunks = [seg[i : i + 20] for i in range(0, len(seg), 20)]
+            chunk_length_ms = 20
+            chunks = [seg[i:i+chunk_length_ms] for i in range(0, len(seg), chunk_length_ms)]
+
 
             ts = 0
             for c in chunks:

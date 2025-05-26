@@ -8,9 +8,7 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.websockets import WebSocketDisconnect
 from twilio.twiml.voice_response import VoiceResponse, Connect, Say, Stream
 from twilio.rest import Client
-from prompts import (
-    SYSTEM_MESSAGE,
-)
+from prompts import SYSTEM_MESSAGE, TRANSCRIPTION_PROMPT
 from dotenv import load_dotenv
 
 if sys.platform.startswith("win"):
@@ -23,7 +21,7 @@ NGROK_URL = os.getenv("NGROK_URL")
 # Configuration
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 PORT = int(os.getenv("PORT", 8000))
-VOICE = "alloy"
+VOICE = "shimmer"
 LOG_EVENT_TYPES = [
     "error",
     "response.content.done",
@@ -50,22 +48,35 @@ async def index_page():
 
 
 # This is for both answering and making the CALL
+
+
 @app.api_route("/incoming-call", methods=["GET", "POST"])
 async def handle_incoming_call(request: Request):
-    """Handle incoming call and return TwiML response to connect to Media Stream."""
     response = VoiceResponse()
-    # <Say> punctuation to improve text-to-speech flow
-    response.say("Hello! This is AI calling you. I have something to ask you.")
-    host = request.url.hostname
-    connect = Connect()
-    print(f"TÄMÄ ON HOST: {host}")
     if not NGROK_URL:
-        raise ValueError(
-            "Missing the PUBLIC_URL (NGROK_URL) environment variable. Please set it in the .env file."
-        )
+        raise ValueError("Missing the NGROK_URL environment variable.")
+    connect = Connect()
     connect.stream(url=f"{NGROK_URL.replace('https://','wss://')}/media-stream")
     response.append(connect)
     return HTMLResponse(content=str(response), media_type="application/xml")
+
+
+# @app.api_route("/incoming-call", methods=["GET", "POST"])
+# async def handle_incoming_call(request: Request):
+#    """Handle incoming call and return TwiML response to connect to Media Stream."""
+#    response = VoiceResponse()
+#    # <Say> punctuation to improve text-to-speech flow
+#    response.say("This is a interview simulation with OpenAI.", punctuation="exclamation")
+#    host = request.url.hostname
+#    connect = Connect()
+#    print(f"TÄMÄ ON HOST: {host}")
+#    if not NGROK_URL:
+#        raise ValueError(
+#            "Missing the PUBLIC_URL (NGROK_URL) environment variable. Please set it in the .env file."
+#        )
+#    connect.stream(url=f"{NGROK_URL.replace('https://','wss://')}/media-stream")
+#    response.append(connect)
+#    return HTMLResponse(content=str(response), media_type="application/xml")
 
 
 # This endpoint is used to handle the WebSocket connection between Twilio and OpenA's Realtime API.
@@ -75,8 +86,9 @@ async def handle_media_stream(websocket: WebSocket):
     print("Client connected")
     await websocket.accept()
 
+    # "wss://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview",
     async with websockets.connect(
-        "wss://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview",
+        "wss://api.openai.com/v1/realtime?model=gpt-4o-mini-realtime-preview-2024-12-17",
         additional_headers={
             "Authorization": f"Bearer {OPENAI_API_KEY}",
             "OpenAI-Beta": "realtime=v1",
@@ -98,15 +110,6 @@ async def handle_media_stream(websocket: WebSocket):
                     data = json.loads(message)
 
                     if data["event"] == "media":
-                        # Lokita käyttäjän puhe
-                        conversation_log.append(
-                            {
-                                "speaker": "user",
-                                "timestamp": data["media"].get("timestamp"),
-                                # Voit halutessasi logittaa myös käyttäjän transkription,
-                                # jos Twilio lähettää sen tai käytät erillistä STT-palvelua
-                            }
-                        )
 
                         # Päivitä timestamp ja lähetä OpenAI:lle
                         if "timestamp" in data["media"]:
@@ -155,12 +158,13 @@ async def handle_media_stream(websocket: WebSocket):
                         transcript_text = response.get("transcript", "").strip()
                         print(f"🎤 Käyttäjä sanoi: {transcript_text}")
                         if transcript_text:
+                            print(f"[DEBUG] User transcript: {transcript_text}")
                             conversation_log.append(
                                 {"speaker": "user", "text": transcript_text}
                             )
 
-                    if response["type"] in LOG_EVENT_TYPES:
-                        print(f"[EVENT] {response['type']}", response)
+                    # if response["type"] in LOG_EVENT_TYPES:
+                    #    print(f"[EVENT] {response['type']}", response)
 
                     # Kerää AI:n transkriptioita
                     if (
@@ -177,6 +181,7 @@ async def handle_media_stream(websocket: WebSocket):
                             print("[DEBUG] response.done received")
                         for item in response.get("response", {}).get("output", []):
                             if item.get("type") == "message":
+                                last_assistant_item = item.get("id")
                                 for part in item.get("content", []):
                                     if (
                                         part.get("type") == "audio"
@@ -282,7 +287,7 @@ async def send_initial_conversation_item(openai_ws):
             "content": [
                 {
                     "type": "input_text",
-                    "text": "Hello! This is Pekka, who is calling and what do you want?",
+                    "text": "Hello! This is AI, who is calling and what do you want?",
                 }
             ],
         },
@@ -294,24 +299,37 @@ async def send_initial_conversation_item(openai_ws):
 async def initialize_session(openai_ws):
     """Control initial session with OpenAI."""
     # TURN DETECTION -> NOTICE IF CLIENT IS ANSWERING
+    # CHECK HERE more information: https://platform.openai.com/docs/guides/realtime-vad
     session_update = {
         "type": "session.update",
         "session": {
-            "turn_detection": {"type": "server_vad"},
+            "turn_detection": {
+                "type": "server_vad",  # Server-side Voice Activity Detection
+                "threshold": 0.3,  # 0-1, when talk is detected, 1 for loud environments...
+                "prefix_padding_ms": 200,  # Add 200ms before detected speech start
+                "silence_duration_ms": 300,  # 300ms of silence to end the speech
+                "create_response": True, # this means that AI will start the conversation
+                "interrupt_response": True,
+            },
             "input_audio_format": "g711_ulaw",
             "output_audio_format": "g711_ulaw",
-            "input_audio_transcription": {"model": "whisper-1"},
+            "input_audio_transcription": {
+                "model": "gpt-4o-mini-transcribe",
+                "prompt": TRANSCRIPTION_PROMPT,
+                "language": "fi",
+            },
             "voice": VOICE,
             "instructions": SYSTEM_MESSAGE,
             "modalities": ["text", "audio"],
-            "temperature": 0.8,
+            "temperature": 0.6,  # min value for this is 0.6... error if you go below it
         },
     }
     print("Sending session update:", json.dumps(session_update))
     await openai_ws.send(json.dumps(session_update))
+    # await asyncio.sleep(0.2)
 
     # AI STARTS THE CONVERSATION!!!!
-    await send_initial_conversation_item(openai_ws)
+    # await send_initial_conversation_item(openai_ws)
 
 
 #  for calling with Twilio
@@ -323,9 +341,14 @@ def call_and_connect():
         )
 
     # Make sure to replace <ngrok-osoitteesi> with your actual ngrok address
+    to_number = os.getenv("WHERE_TO_CALL")
+    if not to_number:
+        raise ValueError(
+            "Missing the WHERE_TO_CALL environment variable. Please set it in the .env file."
+        )
+
     call = twilio_client.calls.create(
-        # to="+358403202768",
-        to="+358405434117",
+        to=to_number,
         from_=twilio_phone_number,
         url="https://5cca-88-112-228-107.ngrok-free.app/incoming-call",
     )
