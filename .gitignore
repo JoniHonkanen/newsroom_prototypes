@@ -26,3 +26,6 @@ pgdata/
 
 # Logs
 *.log
+
+# SQLite database files
+contact_email/test.db

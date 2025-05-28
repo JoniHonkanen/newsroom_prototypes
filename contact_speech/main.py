@@ -10,6 +10,7 @@ from twilio.twiml.voice_response import VoiceResponse, Connect, Say, Stream
 from twilio.rest import Client
 from prompts import SYSTEM_MESSAGE, TRANSCRIPTION_PROMPT
 from dotenv import load_dotenv
+from itertools import groupby
 
 if sys.platform.startswith("win"):
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
@@ -144,6 +145,18 @@ async def handle_media_stream(websocket: WebSocket):
                 # Kirjoita loki tiedostoon aina kun yhteys sulkeutuu
                 with open("conversation_log.json", "w", encoding="utf-8") as f:
                     json.dump(conversation_log, f, ensure_ascii=False, indent=2)
+
+                dialogue_turns = []
+                for speaker, group in groupby(
+                    conversation_log, key=lambda x: x["speaker"]
+                ):
+                    texts = [msg["text"] for msg in group]
+                    dialogue_turns.append(
+                        {"speaker": speaker, "text": "\n".join(texts)}
+                    )
+                # THIS IS WHAT WE WANT TO STORE TO DATABASE... AND THEN SEND IT TO NEWS GENERATOR AGENT!!!
+                with open("conversation_turns.json", "w", encoding="utf-8") as f:
+                    json.dump(dialogue_turns, f, ensure_ascii=False, indent=2)
 
         async def send_to_twilio():
             nonlocal stream_sid, last_assistant_item, response_start_timestamp_twilio
@@ -308,7 +321,7 @@ async def initialize_session(openai_ws):
                 "threshold": 0.3,  # 0-1, when talk is detected, 1 for loud environments...
                 "prefix_padding_ms": 200,  # Add 200ms before detected speech start
                 "silence_duration_ms": 300,  # 300ms of silence to end the speech
-                "create_response": True, # this means that AI will start the conversation
+                "create_response": True,  # this means that AI will start the conversation
                 "interrupt_response": True,
             },
             "input_audio_format": "g711_ulaw",
