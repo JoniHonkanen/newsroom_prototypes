@@ -1,0 +1,96 @@
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--background);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  height: 80px;
+  padding: 0 0.5vw;
+  min-width: 0;
+  border-bottom: 1.5px solid transparent;
+  transition: border-bottom 0.3s;
+}
+
+.stickyActive {
+  border-bottom: 1.5px solid rgba(37, 37, 37, 1)
+;
+}
+
+/* Navit jakavat tilan */
+.nav {
+  display: flex;
+  gap: 0.5vw;
+  min-width: 0;
+  flex: 1 1 0;
+  overflow: hidden;
+}
+.leftNav {
+  justify-content: flex-start;
+}
+.rightNav {
+  justify-content: flex-end;
+}
+
+/* Keskitetty logo, paddingilla tilaa reunoille */
+.logoContainer {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  transform: translateX(-50%);
+  z-index: 1;
+  padding: 0 2vw;
+  pointer-events: none;
+}
+
+.logo {
+  font-family: var(--font-unifraktur-cook), "UnifrakturCook", cursive;
+  font-size: clamp(2rem, 6vw, 60px); /* Skaalautuu ruudun koon mukaan */
+  font-weight: bold;
+  color: white;
+  letter-spacing: -1px;
+  text-decoration: none;
+  white-space: nowrap;
+  pointer-events: auto;
+  transition: font-size 0.2s;
+}
+
+.link {
+  color: #bbb;
+  text-decoration: none;
+  font-size: clamp(1rem, 2.5vw, 1.2rem); /* Skaalautuu */
+  transition: color 0.18s, background 0.18s, font-size 0.18s;
+  padding: 6px 1vw;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+.link:hover,
+.link:focus {
+  color: #1976d2;
+  background: #f0f4ff;
+}
+
+/* Responsiivisuus: pienillä ruuduilla header ja logo pienemmiksi */
+@media (max-width: 600px) {
+  .header {
+    height: 56px;
+    padding: 0 2vw;
+  }
+  .logoContainer {
+    padding: 0 1vw;
+  }
+  .logo {
+    font-size: clamp(1.2rem, 8vw, 36px);
+  }
+  .link {
+    font-size: clamp(0.7rem, 3vw, 1.1rem);
+    padding: 4px 1vw;
+  }
+  .nav {
+    gap: 2vw;
+  }
+}

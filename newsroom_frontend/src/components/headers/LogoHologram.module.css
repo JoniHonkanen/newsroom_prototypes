@@ -1,0 +1,8 @@
+.logoSvg {
+  display: block;
+  width: 100%;
+  height: auto;
+  /* max-width on jo inline-tyylinä, mutta voi olla myös täällä */
+  /* max-width: 480px; */
+  user-select: none; /* Estää tekstin valinnan, mikä on hyvä logoille */
+}

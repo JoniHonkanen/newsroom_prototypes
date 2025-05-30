@@ -1,0 +1,85 @@
+[
+  {
+    "id": 1,
+    "title": "Esimerkkitapaus: Uutisartikkelin otsikko",
+    "summary": "Tämä on esimerkkiuutisen tiivistelmä, joka kuvaa lyhyesti artikkelin sisällön.",
+    "main_category": "Kotimaa",
+    "categories": ["Kotimaa", "Ajankohtaista"],
+    "image_url": "https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=800&q=80",
+    "created_at": "2025-05-30T09:00:00Z",
+    "read_time_minutes": 3,
+    "author": "Toimittaja Esimerkki",
+    "url_slug": "esimerkkitapaus-uutisartikkelin-otsikko",
+    "is_featured": true
+  },
+  {
+    "id": 2,
+    "title": "Poliisi tutkii isoa tietomurtoa Helsingissä",
+    "main_category": "Kotimaa",
+    "image_url": "https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=crop&w=800&q=80",
+    "created_at": "2025-05-29T15:30:00Z"
+  },
+  {
+    "id": 3,
+    "title": "Lämmintä säätä luvassa viikonlopuksi",
+    "main_category": "Sää",
+    "image_url": "https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=800&q=80",
+    "created_at": "2025-05-29T10:00:00Z"
+  },
+  {
+    "id": 4,
+    "title": "Uusi koulu avataan Espoossa syksyllä",
+    "main_category": "Koulutus",
+    "image_url": "https://images.unsplash.com/photo-1503676382389-4809596d5290?auto=format&fit=crop&w=800&q=80",
+    "created_at": "2025-05-28T14:20:00Z"
+  },
+  {
+    "id": 5,
+    "title": "Moottoritien liikenne ruuhkautui onnettomuuden vuoksi",
+    "main_category": "Liikenne",
+    "image_url": "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=800&q=80",
+    "created_at": "2025-05-28T08:05:00Z"
+  },
+  {
+    "id": 6,
+    "title": "Suomen jääkiekkomaajoukkue valmistautuu MM-kisoihin",
+    "main_category": "Urheilu",
+    "image_url": "https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=800&q=80",
+    "created_at": "2025-05-27T19:45:00Z"
+  },
+  {
+    "id": 7,
+    "title": "Yliopisto panostaa tekoälyn tutkimukseen",
+    "main_category": "Tiede",
+    "image_url": "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80",
+    "created_at": "2025-05-27T12:10:00Z"
+  },
+  {
+    "id": 8,
+    "title": "Eläintarhassa syntyi harvinainen pentu",
+    "main_category": "Luonto",
+    "image_url": "https://images.unsplash.com/photo-1502086223501-7ea6ecd79368?auto=format&fit=crop&w=800&q=80",
+    "created_at": "2025-05-26T11:25:00Z"
+  },
+  {
+    "id": 9,
+    "title": "Raitiovaunuliikenne laajenee uudelle alueelle",
+    "main_category": "Kaupunki",
+    "image_url": "https://images.unsplash.com/photo-1467003909585-2f8a72700288?auto=format&fit=crop&w=800&q=80",
+    "created_at": "2025-05-26T09:00:00Z"
+  },
+  {
+    "id": 10,
+    "title": "Kuntavaalien äänestysaktiivisuus nousussa",
+    "main_category": "Politiikka",
+    "image_url": "https://images.unsplash.com/photo-1468421870903-4df1664ac249?auto=format&fit=crop&w=800&q=80",
+    "created_at": "2025-05-25T18:35:00Z"
+  },
+  {
+    "id": 11,
+    "title": "Kesäfestivaalit houkuttelevat tuhansia kävijöitä",
+    "main_category": "Kulttuuri",
+    "image_url": "https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=800&q=80",
+    "created_at": "2025-05-25T07:50:00Z"
+  }
+]

@@ -1,0 +1,98 @@
+.subheader {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.nav {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 32px;
+  height: 50px;
+  box-sizing: border-box;
+  overflow: hidden;
+  position: relative;
+  scrollbar-width: none; /* Firefox */
+}
+
+.nav::-webkit-scrollbar {
+  display: none; /* Chrome, Safari */
+}
+.nav::-webkit-scrollbar-thumb {
+  background: #232f3e;
+  border-radius: 4px;
+}
+
+.nav::after {
+  content: "";
+  position: absolute;
+  left: 0px;
+  right: 0px;
+  bottom: 0;
+  height: 1px; /* Paksumpi näkyy paremmin */
+  background: #fff;
+  border-radius: 1px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.category {
+  color: #eee;
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: bold;
+  padding: 0.5rem 1rem;
+  white-space: nowrap;
+  border-radius: 2px;
+  transition: color 0.18s, background 0.18s;
+  display: flex;
+  align-items: center;
+  border-radius: 25px;
+}
+.category:hover,
+.category:focus {
+  color: #1976d2;
+  background: #232f3e;
+}
+
+/* Pienemmillä ruuduilla fonttikoko ja gap pienenee */
+@media (max-width: 800px) {
+  .nav {
+    max-width: 98vw;
+    padding: 0 8px;
+  }
+  .category {
+    line-height: 38px;
+    height: 38px;
+    padding: 0 6px;
+  }
+  .subheader {
+    min-height: 38px;
+  }
+  .nav::after {
+    left: 5%;
+    right: 5%;
+  }
+}
+
+/* Jos tila loppuu täysin, fontti skaalaa minimiin, mutta ei rivity koskaan */
+@media (max-width: 480px) {
+  .nav {
+    gap: 2px;
+    padding: 0 2px;
+  }
+  .category {
+    font-size: 0.84rem;
+    line-height: 32px;
+    height: 32px;
+    padding: 0 3px;
+  }
+  .subheader {
+    min-height: 32px;
+  }
+}

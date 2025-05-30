@@ -1,17 +1,29 @@
-# Python cache & build artifacts
-__pycache__/
-*.py[cod]
-*.egg-info/
-build/
+# Next.js / Node.js
+.next/
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Build output
+out/
 dist/
+build/
 
-# Virtual environments
-venv/
-env/
-.venv/
+# Test output
+coverage/
 
-# Environment files (ignore all .env files in all directories)
-*.env
+# Environment files
+.env
+.env.*     # Kaikki .env-muotoiset
+
+# Local config files
+*.local
+*.secret
+
+# Log files
+*.log
 
 # Editor settings
 .vscode/
@@ -24,8 +36,26 @@ Thumbs.db
 # Docker volume (jos käytät)
 pgdata/
 
-# Logs
-*.log
-
 # SQLite database files
-contact_email/test.db
+*.db
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+venv/
+env/
+.venv/
+
+# Misc
+*.swp
+*.swo
+
+# Jest snapshot
+*.snap
+
+# Optional: next/image/cache
+.cache/
+
+# Optional: vercel CLI local
+.vercel/
