@@ -1,14 +1,15 @@
 .card {
-  display: flex;
   flex-direction: row;
-  align-items: flex-start;
-  color: #fff;
-  overflow: hidden;
-  width: 100%;
-  min-height: 120px;
-  gap: 1.5rem;
-  padding: 1.25rem;
-  box-sizing: border-box;
+  align-items: stretch;
+  gap: 2rem;
+  max-width: 1288px;
+  display: flex;
+  padding: 20px 0px;
+  border-bottom: 1px solid white;
+}
+
+.card:first-child {
+  padding-top: 0;
 }
 
 .content {

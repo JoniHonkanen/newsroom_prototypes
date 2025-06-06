@@ -1,0 +1,16 @@
+[
+  {
+    "id": 1,
+    "title": "Esimerkkitapaus: Uutisartikkelin otsikko",
+    "summary": "Tämä on esimerkkiuutisen tiivistelmä, joka kuvaa lyhyesti artikkelin sisällön.",
+    "main_category": "Kotimaa",
+    "categories": ["Kotimaa", "Ajankohtaista"],
+    "image_url": "https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=800&q=80",
+    "created_at": "2025-05-30T09:00:00Z",
+    "read_time_minutes": 3,
+    "author": "Toimittaja Esimerkki",
+    "url_slug": "esimerkkitapaus-uutisartikkelin-otsikko",
+    "display_type": "featured",
+    "content": "Tämä on artikkelin varsinainen leipäteksti. Voit kirjoittaa tähän pitkänkin tekstin, jossa käsitellään uutisen yksityiskohtia, taustoja ja vaikutuksia. Esimerkkitapaus osoittaa, kuinka yksittäinen artikkeli voi olla sekä informatiivinen että kiinnostava lukijoille."
+  }
+]

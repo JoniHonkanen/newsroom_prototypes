@@ -1,8 +1,8 @@
 import Image from "next/image";
 import styles from "./NewsCard.module.css";
-import type { SimpleNewsItem } from "@/types/news";
+import type { NewsItem } from "@/types/news";
 
-export default function NewsCard({ news }: { news: SimpleNewsItem }) {
+export default function NewsCard({ news }: { news: NewsItem }) {
   return (
     <div className={styles.card}>
       <div className={styles.content}>

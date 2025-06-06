@@ -1,0 +1,129 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0rem 1rem;
+  position: relative;
+  border-bottom: 1px solid white;
+  padding: 2rem 0rem 1rem 0rem
+}
+
+.card {
+  /* kortin sisäiset tyylit */
+  position: relative;
+  padding: 0rem 0rem 1rem 0rem;
+  min-height: 140px;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.card:nth-child(4n-3) {
+  padding-left: 0 !important;
+}
+.card:nth-child(4n) {
+  padding-right: 0 !important;
+}
+
+.card:not(:nth-child(4n))::after {
+  content: "";
+  opacity: 0.5;
+  pointer-events: none;
+  background: #333;
+  width: 1px;
+  height: 90%;
+  position: absolute;
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+}
+
+/* Yläviiva */
+.card:nth-child(n + 5)::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%; /* SAMA arvo kuin pystyviivan korkeus! */
+  margin: 0 auto;
+  height: 1px;
+  background: #333;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.content {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.imgBox {
+  width: 100%;          /* Täyttää gridin solun leveyden */
+  aspect-ratio: 5/4;    /* (tai mikä arvo haluat, tämä on 250x200-suhde) */
+  max-width: 100%;      /* Ei karkaa solusta yli */
+  height: auto;         /* Korkeus määräytyy aspect-ration mukaan */
+  overflow: hidden;
+  background: #222;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.18;
+  margin-bottom: 0.7em;
+}
+
+.time {
+  font-size: 1rem;
+  color: #bbb;
+  margin-top: auto;
+}
+
+@media (max-width: 1050px) {
+  .grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 900px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .card {
+    border-top: none;
+  }
+  .card:nth-child(n + 3) {
+    border-top: 1px solid #333;
+    margin-top: 1.5rem;
+  }
+}
+
+@media (max-width: 700px) {
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 0.5rem 0;
+  }
+  .imgBox {
+    width: 100%;
+    height: 200px;
+    margin-right: 0;
+    margin-bottom: 0.5em;
+  }
+  .title {
+    margin-right: 0;
+  }
+}
