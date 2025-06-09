@@ -1,0 +1,84 @@
+[
+  {
+    "id": 10,
+    "canonical_news_id": 1,
+    "language": "fi",
+    "is_original": 1,
+    "version": 1,
+    "lead": "EU-parlamentti hyväksyi ilmastolakipaketin äänin 421–230.",
+    "summary": "Päätös on herättänyt voimakasta keskustelua sekä puolesta että vastaan eri jäsenmaissa.",
+    "status": "published",
+    "location_tags": "Bryssel",
+    "sources": "[\"Reuters\", \"Yle\"]",
+    "interviews": null,
+    "revies_status": null,
+    "author": "Maria Toimittaja",
+    "embedding": null,
+    "body_blocks": [
+      {
+        "order": 1,
+        "type": "headline",
+        "content": "EU hyväksyi kiistellyn lakipaketin ilmastotavoitteista"
+      },
+      {
+        "order": 2,
+        "type": "intro",
+        "content": "Euroopan parlamentti on hyväksynyt uuden lakipaketin, joka tähtää hiilineutraaliuteen vuoteen 2050 mennessä."
+      },
+      {
+        "order": 3,
+        "type": "image",
+        "content": {
+          "url": "https://esimerkki.fi/images/euparliament.jpg",
+          "caption": "EU-parlamentin jäsenet äänestivät lakipaketista tiistaina.",
+          "alt": "EU-parlamentti äänestyksessä",
+          "source": "EPA",
+          "photographer": "John Doe"
+        }
+      },
+      {
+        "order": 4,
+        "type": "subheading",
+        "content": "Lakipaketin sisältö jakaa mielipiteitä"
+      },
+      {
+        "order": 5,
+        "type": "text",
+        "content": "Lakipakettiin sisältyy muun muassa päästövähennystavoitteiden kiristäminen sekä uusien hiilinielujen lisääminen. Osa jäsenmaista pitää tavoitteita kunnianhimoisina, osa liian rajoittavina."
+      },
+      {
+        "order": 6,
+        "type": "subheading",
+        "content": "Vastustus kasvoi itäisessä Euroopassa"
+      },
+      {
+        "order": 7,
+        "type": "text",
+        "content": "Erityisesti itäisen Euroopan maat ovat kritisoineet lakipaketin vaikutuksia alueen teollisuuteen ja energiantuotantoon. Useat maat vaativat siirtymäaikojen pidentämistä."
+      },
+      {
+        "order": 8,
+        "type": "image",
+        "content": {
+          "url": "https://esimerkki.fi/images/protest.jpg",
+          "caption": "Lakipaketin vastustajat järjestivät mielenosoituksen parlamenttitalon edessä.",
+          "alt": "Mielenosoittajia EU-parlamentin edessä",
+          "source": "AFP",
+          "photographer": "Jane Smith"
+        }
+      },
+      {
+        "order": 9,
+        "type": "text",
+        "content": "Päätöksen jälkeen monet kansalaisjärjestöt ovat ilmaisseet huolensa siitä, kuinka tehokkaasti jäsenmaat tulevat toimeenpanemaan uudet säädökset."
+      },
+      {
+        "order": 10,
+        "type": "reference",
+        "content": "Lähteet: Reuters, Yle"
+      }
+    ],
+    "published_at": "2025-06-10T12:30:00Z",
+    "updated_at": "2025-06-10T12:15:00Z"
+  }
+]

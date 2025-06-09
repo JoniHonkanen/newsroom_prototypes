@@ -1,0 +1,82 @@
+{
+  "id": 10,
+  "canonical_news_id": 1,
+  "language": "en",
+  "is_original": false,
+  "version": 1,
+  "lead": "The EU Parliament approved the climate law package with a vote of 421–230.",
+  "summary": "The decision has sparked intense debate both for and against in various member states.",
+  "status": "published",
+  "location_tags": "Bryssel",
+  "sources": "[\"Reuters\", \"Yle\"]",
+  "interviews": null,
+  "revies_status": null,
+  "author": "Maria Toimittaja",
+  "embedding": null,
+  "body_blocks": [
+    {
+      "order": 1,
+      "type": "headline",
+      "content": "EU approved the controversial law package on climate goals"
+    },
+    {
+      "order": 2,
+      "type": "intro",
+      "content": "The European Parliament has approved a new law package aimed at achieving carbon neutrality by 2050."
+    },
+    {
+      "order": 3,
+      "type": "image",
+      "content": {
+        "url": "https://esimerkki.fi/images/euparliament.jpg",
+        "caption": "EU Parliament members voted on the law package on Tuesday.",
+        "alt": "EU Parliament voting",
+        "source": "EPA",
+        "photographer": "John Doe"
+      }
+    },
+    {
+      "order": 4,
+      "type": "subheading",
+      "content": "The content of the law package divides opinions"
+    },
+    {
+      "order": 5,
+      "type": "text",
+      "content": "The law package includes, among other things, tightening emission reduction targets and increasing new carbon sinks. Some member states consider the targets ambitious, while others see them as too restrictive."
+    },
+    {
+      "order": 6,
+      "type": "subheading",
+      "content": "Opposition grew in Eastern Europe"
+    },
+    {
+      "order": 7,
+      "type": "text",
+      "content": "Particularly Eastern European countries have criticized the law package's impact on the region's industry and energy production. Several countries are calling for extended transition periods."
+    },
+    {
+      "order": 8,
+      "type": "image",
+      "content": {
+        "url": "https://esimerkki.fi/images/protest.jpg",
+        "caption": "Opponents of the law package held a protest in front of the parliament building.",
+        "alt": "Protesters in front of the EU Parliament",
+        "source": "AFP",
+        "photographer": "Jane Smith"
+      }
+    },
+    {
+      "order": 9,
+      "type": "text",
+      "content": "After the decision, many NGOs have expressed concern about how effectively member states will implement the new regulations."
+    },
+    {
+      "order": 10,
+      "type": "reference",
+      "content": "Sources: Reuters, Yle"
+    }
+  ],
+  "published_at": "2025-06-10T12:30:00Z",
+  "updated_at": "2025-06-10T12:15:00Z"
+}

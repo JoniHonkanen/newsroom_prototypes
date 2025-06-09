@@ -1,0 +1,82 @@
+{
+  "id": 10,
+  "canonical_news_id": 1,
+  "language": "sv",
+  "is_original": false,
+  "version": 1,
+  "lead": "EU-parlamentet godkände klimatlagspaketet med rösterna 421–230.",
+  "summary": "Beslutet har väckt stark debatt både för och emot i olika medlemsländer.",
+  "status": "published",
+  "location_tags": "Bryssel",
+  "sources": "[\"Reuters\", \"Yle\"]",
+  "interviews": null,
+  "revies_status": null,
+  "author": "Maria Toimittaja",
+  "embedding": null,
+  "body_blocks": [
+    {
+      "order": 1,
+      "type": "headline",
+      "content": "EU godkände det omstridda lagpaketet om klimatmål"
+    },
+    {
+      "order": 2,
+      "type": "intro",
+      "content": "Europaparlamentet har godkänt ett nytt lagpaket som syftar till klimatneutralitet senast år 2050."
+    },
+    {
+      "order": 3,
+      "type": "image",
+      "content": {
+        "url": "https://esimerkki.fi/images/euparliament.jpg",
+        "caption": "EU-parlamentets ledamöter röstade om lagpaketet på tisdagen.",
+        "alt": "EU-parlamentet under omröstning",
+        "source": "EPA",
+        "photographer": "John Doe"
+      }
+    },
+    {
+      "order": 4,
+      "type": "subheading",
+      "content": "Lagpaketets innehåll delar åsikter"
+    },
+    {
+      "order": 5,
+      "type": "text",
+      "content": "Lagpaketet innehåller bland annat skärpning av utsläppsminskningsmål samt ökning av nya kolsänkor. Vissa medlemsländer anser att målen är ambitiösa, andra för restriktiva."
+    },
+    {
+      "order": 6,
+      "type": "subheading",
+      "content": "Motståndet växte i östra Europa"
+    },
+    {
+      "order": 7,
+      "type": "text",
+      "content": "Särskilt östeuropeiska länder har kritiserat lagpaketets effekter på regionens industri och energiproduktion. Flera länder kräver förlängning av övergångstider."
+    },
+    {
+      "order": 8,
+      "type": "image",
+      "content": {
+        "url": "https://esimerkki.fi/images/protest.jpg",
+        "caption": "Motståndare till lagpaketet organiserade en protest utanför parlamentet.",
+        "alt": "Demonstranter framför EU-parlamentet",
+        "source": "AFP",
+        "photographer": "Jane Smith"
+      }
+    },
+    {
+      "order": 9,
+      "type": "text",
+      "content": "Efter beslutet har många ideella organisationer uttryckt oro över hur effektivt medlemsländerna kommer att genomföra de nya reglerna."
+    },
+    {
+      "order": 10,
+      "type": "reference",
+      "content": "Källor: Reuters, Yle"
+    }
+  ],
+  "published_at": "2025-06-10T12:30:00Z",
+  "updated_at": "2025-06-10T12:15:00Z"
+}
