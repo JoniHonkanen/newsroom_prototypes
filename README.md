@@ -19,26 +19,43 @@ These projects are intended for testing, learning, and rapid development purpose
 
 ## Projects
 
+- **newsroom_frontend/**  
+  Next.js 15, Apollo Client, GraphQL-based multilingual news frontend with SSR and SEO support.  
+  See diagrams and details in `newsroom_frontend/README.md`.
+
+- **newsroom_backend/**  
+  GraphQL backend for news content, supports localized content and is optimized for SSR/SEO scenarios.
+
+- **contact_email/**  
+  Prototype for sending email messages (contact forms, notifications).
+
+- **contact_speech/**  
+  Speech-based contact and interview functionality (e.g. for phone interviews, audio collection or call routing).
+
 - **news_similarity/**  
   Prototype for storing news articles as vector embeddings and finding semantically similar ones using SentenceTransformers and pgvector.
 
-- **rss_fetching/**
+- **rss_fetching/**  
   Experiments with fetching news content from RSS feeds, generating original article drafts, and enriching them with related news using semantic similarity.
 
 - **gradio_tool_for_news_validation/**  
-  This is an extension of the "rss_fetching" module.  
-  It shows the process for generating and validating news:
-  - Fetching and parsing a single news item  
-  - Making web searches and enriching the original news with them  
-  - Validating whether the generated news is suitable for publication  
-  - Logging the reasoning of agents  
-  
-  For testing different kinds of validations, a new project has been created called **"Editor in Chief"**.
+  Extension of "rss_fetching". Shows process for generating and validating news, including web enrichment and logging agent reasoning.
 
 - **Editor in Chief/**  
-  The purpose is to test whether the editor-in-chief ("Päätoimittaja") accepts or rejects real news that has been published.  
-  This is more about prompt engineering — teaching the main boss:
-  - Provide a link to the news so the editor-in-chief can review it  
-  - Check whether the editor accepts or rejects it  
-    - Adjust the prompt accordingly
-  - Log the reasoning that editor in chief does
+  Tests whether the editor-in-chief accepts or rejects real published news. Focus on prompt engineering for editorial decision-making and rationale logging.
+
+## Architecture and Database
+
+### News Generation & Processing Workflow
+
+![Backend Process Flow](./newsroom-backend.png)
+
+- Illustrates the main process for fetching, enriching, validating, and publishing news.
+- Shows email and phone interview integration.
+
+### Database Schema
+
+![Database Schema](./newsroom_database.png)
+
+- Main tables and relationships for storing news, sources, interviews, emails, and categories.
+- Supports multilingual news, rich body blocks, and both phone/email interviews.
