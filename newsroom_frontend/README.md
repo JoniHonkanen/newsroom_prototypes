@@ -1,36 +1,60 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Frontend
 
-## Getting Started
+- **Framework:** Next.js 15 (App Router)
+- **Internationalization:** i18n enabled
+- **Data fetching:** GraphQL
 
-First, run the development server:
+## Structure
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- **Homepage:**  
+  `src/app/[locale]/page.tsx`  
+  - SSR (Server Side Rendering)  
+  - Language via `[locale]` param
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- **Single news pages:**  
+  `src/app/[locale]/[slug]/[id]/page.tsx`  
+  - SSR  
+  - Parameters: `[locale]`, `[slug]`, `[id]`  
+  - Own news (custom slugs and ids) always SSR
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **Load more news:**  
+  - On the homepage, loading more news happens client-side (Apollo Client, GraphQL)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## How localization and slugs work
 
-## Learn More
+- `[locale]`: language (e.g. fi, en)
+- `[slug]`: news page path
+- `[id]`: individual news id
 
-To learn more about Next.js, take a look at the following resources:
+## Architecture Diagrams
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### 1. General Data Flow (SSR and CSR)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+![Frontend SSR/CSR Sequence Diagram](./frontend_plan.png)
 
-## Deploy on Vercel
+- Shows how data is fetched both server-side (SSR) and client-side (CSR).
+- Highlights the flow from the user's request to database queries and rendering.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### 2. News Page SEO (Localized SSR and SEO-friendly URLs)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+![News Page SSR, Localization and SEO](./frontend_plan_seo.png)
+
+- Demonstrates navigation directly to a localized news page (e.g. `/uutiset/12345` or `/en/news/12345`).
+- Shows how SSR renders localized, SEO-friendly HTML.
+- Locale and URL structure are optimized for search engines.
+
+## Example URL structures
+
+- Homepage in Finnish (default): `/`
+- Single news in Finnish: `/uutiset/12345`
+- Homepage in English: `/en`
+- Single news in English: `/en/news/12345`
+
+> Note: The Finnish language (default) does **not** have a `/fi` prefix in the URL.  
+> Only non-default languages have a locale prefix in the URL (`/en`, `/sv`, etc.).
+
+## Summary
+
+- SSR provides SEO and fresh content.
+- All data is fetched from a GraphQL API.
+- i18n is handled via routing and GraphQL query variables.
