@@ -31,12 +31,12 @@ export default async function NewsPage({ params }: { params: NewsPageParams }) {
 
   const apolloClient = createApolloClient(nextHeaders);
 
-  //remember that singleNewsItem need to be defined in the GraphQL schema
-  const { data } = await apolloClient.query<{ singleNewsItem: NewsItem }>({
+  //remember that newsArticle need to be defined in the GraphQL schema
+  const { data } = await apolloClient.query<{ newsArticle: NewsItem }>({
     query: GET_NEWS_ITEM,
     variables: { id },
   });
-  const news = data?.singleNewsItem;
+  const news = data?.newsArticle;
   if (!news) return notFound();
 
   console.log("Fetched News Item:", news);

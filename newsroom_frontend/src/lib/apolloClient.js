@@ -7,7 +7,7 @@ export function createApolloClient(headers = {}) {
     ssrMode: typeof window === "undefined",
     link: new HttpLink({
       uri: process.env.NODE_ENV === "development"
-        ? "http://localhost:4000/"   // kehitysportti
+        ? "http://localhost:4000/graphql"   // kehitysportti
         : "https://your-production-api/graphql",
       credentials: "include",
       headers,                     // serverkutsuissa Next 15:s headers()

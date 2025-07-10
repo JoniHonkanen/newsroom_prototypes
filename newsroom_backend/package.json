@@ -1,8 +1,11 @@
 {
   "name": "newsroom_backend",
   "version": "1.0.0",
-  "main": "index.js",
+  "type": "module",
+  "main": "server.js",
   "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
@@ -10,9 +13,12 @@
   "description": "",
   "dependencies": {
     "@apollo/server": "^4.12.2",
-    "@as-integrations/express5": "^1.0.0",
+    "@as-integrations/express5": "^1.1.1",
+    "cors": "^2.8.5",
+    "dotenv": "^17.1.0",
     "express": "^5.1.0",
     "graphql": "^16.11.0",
-    "graphql-tag": "^2.12.6"
+    "graphql-tag": "^2.12.6",
+    "pg": "^8.16.3"
   }
 }

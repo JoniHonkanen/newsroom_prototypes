@@ -1,54 +1,48 @@
-# Newsroom Backend (GraphQL)
+# Newsroom Backend
 
-This project is a simple Node.js backend providing a GraphQL API for a newsroom application.  
-It serves news data from a mock JSON file via Apollo Server.
+GraphQL-powered backend for newsroom management with PostgreSQL database integration.
 
-## How It Works
+## Features
 
-- **Tech Stack:** Node.js, Apollo Server, GraphQL
-- **Data Source:** Reads news items from `mockup_data.json`
-- **API:** GraphQL endpoint at http://localhost:4000/
-- **Usage:** For frontend prototyping and development before connecting to a real database
+- GraphQL API for news article management
+- PostgreSQL database with pgvector extension support
+- CRUD operations for news articles
+- Filtering by language and status
+- JSON support for location_tags, sources, interviews, and body_blocks fields
 
-## Schema
-```
-type NewsItem {
-id: ID!
-title: String!
-main_category: String!
-image_url: String!
-created_at: String!
-display_type: String!
-summary: String
-categories: [String!]
-read_time_minutes: Int
-author: String
-url_slug: String
-}
+## Setup
 
-type Query {
-news: [NewsItem!]!
-}
+1. Install dependencies:
+
+```bash
+npm install
 ```
 
-## How to Start
+2. Configure environment variables in `.env`:
 
-1. Install dependencies:  
-   `npm install`
-2. Run the server:  
-   `node server.js`
-3. Open http://localhost:4000/ in your browser to access the GraphQL playground.
+```env
+DB_HOST=localhost
+DB_PORT=15432
+DB_NAME=newsroom_db
+DB_USER=postgres
+DB_PASSWORD=your_password_here
+PORT=4000
+```
 
-## Example Query
+3. Ensure PostgreSQL database is running (database tables should already exist)
+
+## Running the Server
+
+### Development
+
+```bash
+npm run dev
 ```
-query {
-news {
-id
-title
-main_category
-image_url
-created_at
-display_type
-}
-}
+
+### Production
+
+```bash
+npm start
 ```
+
+Server will start at `http://localhost:4000/graphql`

@@ -1,36 +1,55 @@
-const { gql } = require("graphql-tag");
-module.exports = gql`
-  type NewsItem {
-    id: ID!
-    title: String!
-    main_category: String!
-    image_url: String!
-    created_at: String!
-    display_type: String!
-    summary: String
-    categories: [String!]
-    read_time_minutes: Int
-    author: String
-    url_slug: String
-  }
+import { gql } from "graphql-tag";
 
-  type SingleNewsItem {
+export default gql`
+  type NewsArticle {
     id: ID!
-    title: String!
-    main_category: String!
-    image_url: String!
-    created_at: String!
-    display_type: String!
+    canonical_news_id: Int!
+    language: String!
+    version: Int
+    lead: String
     summary: String
-    categories: [String!]
-    read_time_minutes: Int
+    status: String
+    location_tags: String
+    sources: String
+    interviews: String
+    review_status: String
     author: String
-    url_slug: String
-    content: String
+    body_blocks: String
+    enrichment_status: String
+    markdown_content: String
+    published_at: String
+    updated_at: String
+    original_article_type: String
   }
 
   type Query {
-    news: [NewsItem!]!
-    singleNewsItem(id: ID!): SingleNewsItem
+    news(offset: Int, limit: Int): [NewsArticle!]!
+    newsArticle(id: ID!): NewsArticle
+    newsByLanguage(language: String!): [NewsArticle!]!
+    newsByStatus(status: String!): [NewsArticle!]!
+  }
+
+  type Mutation {
+    createNewsArticle(input: NewsArticleInput!): NewsArticle!
+    updateNewsArticle(id: ID!, input: NewsArticleInput!): NewsArticle!
+    deleteNewsArticle(id: ID!): Boolean!
+  }
+
+  input NewsArticleInput {
+    canonical_news_id: Int!
+    language: String!
+    version: Int
+    lead: String
+    summary: String
+    status: String
+    location_tags: String
+    sources: String
+    interviews: String
+    review_status: String
+    author: String
+    body_blocks: String
+    enrichment_status: String
+    markdown_content: String
+    original_article_type: String
   }
 `;

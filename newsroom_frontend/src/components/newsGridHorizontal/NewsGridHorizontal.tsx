@@ -4,29 +4,38 @@ import type { NewsItem } from "@/types/news";
 import { getRelativeTime } from "@/utils/date";
 
 // This have Text and Image side by side, small and horizontal
-export default function NewsGridHorizontal({ newsList }: { newsList: NewsItem[] }) {
+export default function NewsGridHorizontal({
+  newsList,
+}: {
+  newsList: NewsItem[];
+}) {
+  console.log("NewsGridHorizontal newsList:", newsList);
   return (
     <div className={styles.grid}>
       {newsList.map((news) => (
         <article key={news.id} className={styles.card}>
           <div className={styles.content}>
-            <h3 className={styles.title}>{news.title}</h3>
+            <h3 className={styles.title}>{news.lead}</h3>
             <div className={styles.time}>
-              {getRelativeTime(news.created_at)}
+              {news.published_at
+                ? getRelativeTime(news.published_at)
+                : "Aika tuntematon"}
             </div>
           </div>
-          {news.image_url && (
-            <div className={styles.imgBox}>
-              <Image
-                src={news.image_url}
-                alt={news.title}
-                width={72}
-                height={72}
-                className={styles.image}
-                style={{ objectFit: "cover" }}
-              />
-            </div>
-          )}
+          <div className={styles.imgBox}>
+            <Image
+              // Käytetään placeholderia, jos news.image_url on tyhjä
+              src={
+                news.image_url ||
+                "https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=800&q=80"
+              }
+              alt={news.title || "Uutiskuva"}
+              width={72}
+              height={72}
+              className={styles.image}
+              style={{ objectFit: "cover" }}
+            />
+          </div>
         </article>
       ))}
     </div>

@@ -1,41 +1,76 @@
 import { gql } from "@apollo/client";
 
-//remember that these need to be same names as the ones in the backend
-// news,  singleNewsItem... etc
-
 export const GET_NEWS = gql`
-  query GetNews {
-    news {
+  query GetNews($offset: Int, $limit: Int) {
+    news(offset: $offset, limit: $limit) {
       id
-      title
-      main_category
-      image_url
-      created_at
-      display_type
+      canonical_news_id
+      language
+      version
+      lead
       summary
-      categories
-      read_time_minutes
+      status
+      location_tags
+      sources
+      interviews
+      review_status
       author
-      url_slug
+      body_blocks
+      enrichment_status
+      markdown_content
+      published_at
+      updated_at
+      original_article_type
     }
   }
 `;
 
-export const GET_NEWS_ITEM = gql`
-  query GetNewsItem($id: ID!) {
-    singleNewsItem(id: $id) {
+/* export const GET_NEWS = gql`
+  query GetNews {
+    news {
       id
-      title
-      main_category
-      image_url
-      created_at
-      display_type
+      canonical_news_id
+      language
+      version
+      lead
       summary
-      categories
-      read_time_minutes
+      status
+      location_tags
+      sources
+      interviews
+      review_status
       author
-      url_slug
-      content
+      body_blocks
+      enrichment_status
+      markdown_content
+      published_at
+      updated_at
+      original_article_type
+    }
+  }
+`; */
+
+export const GET_NEWS_ITEM = gql`
+  query NewsArticle($newsArticleId: ID!) {
+    newsArticle(id: $newsArticleId) {
+      id
+      canonical_news_id
+      language
+      version
+      lead
+      summary
+      status
+      location_tags
+      sources
+      interviews
+      review_status
+      author
+      body_blocks
+      enrichment_status
+      markdown_content
+      published_at
+      updated_at
+      original_article_type
     }
   }
 `;

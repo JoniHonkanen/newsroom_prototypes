@@ -10,26 +10,29 @@ export default function NewsGridVertical({
 }: {
   newsList: NewsItem[];
 }) {
+  console.log("NewsGridVertical newsList:", newsList);
   return (
     <div className={styles.grid}>
       {newsList.map((news) => (
         <article key={news.id} className={styles.card}>
-          {news.image_url && (
-            <div className={styles.imgBox}>
-              <Image
-                src={news.image_url}
-                alt={news.title}
-                width={250}
-                height={200}
-                className={styles.image}
-                style={{ objectFit: "cover" }}
-              />
-            </div>
-          )}
+          <div className={styles.imgBox}>
+            <Image
+              src={
+                news.image_url ||
+                "https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=800&q=80"
+              }
+              alt={news.title}
+              width={250}
+              height={200}
+              className={styles.image}
+              style={{ objectFit: "cover" }}
+            />
+          </div>
+
           <div className={styles.content}>
-            <h3 className={styles.title}>{news.title}</h3>
+            <h3 className={styles.title}>{news.lead}</h3>
             <div className={styles.time}>
-              {getRelativeTime(news.created_at)}
+              {getRelativeTime(news.updated_at || news.created_at)}
             </div>
           </div>
         </article>

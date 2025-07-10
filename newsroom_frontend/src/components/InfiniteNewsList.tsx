@@ -8,71 +8,90 @@ import NewsGridHorizontal from "./newsGridHorizontal/NewsGridHorizontal";
 import NewsGridVertical from "./newsGridVertical/NewsGridVertical";
 import { NewsItem } from "@/types/news";
 
-export default function InfiniteNewsList() {
+interface Props {
+  initialOffset: number;
+}
+
+export default function InfiniteNewsList({ initialOffset }: Props) {
+  // Tämä komponentti ei enää näytä mitään alussa, se vain lataa lisää taustalla
   const [pages, setPages] = useState<NewsItem[][]>([]);
-  const [offset, setOffset] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
   const PAGE_SIZE = 17;
 
-  const [fetchNews, { data, loading, error }] = useLazyQuery(GET_NEWS, {
+  const [fetchNews, { loading, error }] = useLazyQuery(GET_NEWS, {
     notifyOnNetworkStatusChange: true,
+    onCompleted: (data) => {
+      // Duplikaattien esto on edelleen tärkeä
+      if (data?.news && data.news.length > 0) {
+        setPages((prevPages) => {
+          const existingIds = new Set(prevPages.flat().map((item) => item.id));
+          const uniqueNewItems = data.news.filter(
+            (item: NewsItem) => !existingIds.has(item.id)
+          );
+          if (uniqueNewItems.length > 0) {
+            return [...prevPages, uniqueNewItems];
+          }
+          return prevPages;
+        });
+      }
+      if (!data?.news || data.news.length < PAGE_SIZE) {
+        setHasMore(false);
+      }
+    },
   });
+
   const triggerRef = useRef<HTMLDivElement | null>(null);
 
-  // Lisää uusi sivu pages-taulukkoon
   useEffect(() => {
-    if (data?.news) {
-      setPages((prev) => [...prev, data.news]);
-    }
-  }, [data]);
+    if (!triggerRef.current || !hasMore || loading) return;
 
-  // Ensimmäinen fetch
-  useEffect(() => {
-    fetchNews({ variables: { offset: 0, limit: PAGE_SIZE } });
-    setOffset(PAGE_SIZE);
-  }, []);
-
-  // Scroll-trigger
-  useEffect(() => {
-    if (!triggerRef.current) return;
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting && !loading) {
-          fetchNews({ variables: { offset: offset, limit: PAGE_SIZE } });
-          setOffset((prev) => prev + PAGE_SIZE);
+        if (entry.isIntersecting) {
+          // MUUTOS: Offset lasketaan initialOffsetin PÄÄLLE.
+          const nextOffset = initialOffset + pages.length * PAGE_SIZE;
+          fetchNews({ variables: { offset: nextOffset, limit: PAGE_SIZE } });
         }
       },
-      { threshold: 0 }
+      { threshold: 0.1 }
     );
+
     observer.observe(triggerRef.current);
     return () => observer.disconnect();
-  }, [offset, fetchNews, loading]);
+  }, [pages, loading, hasMore, fetchNews, initialOffset]); // initialOffset lisätty dependency-listaan
 
-  // Renderöi jokainen "sivu" rytmissä
+  // Komponentti renderöi vain lataamansa SIVUT, ei ensimmäistä sivua.
   return (
-    <section>
-      {pages.map((page, idx) => {
+    <>
+      {pages.map((page, pageIndex) => {
         const featured = page.slice(0, 2);
         const list = page.slice(2, 5);
         const horizontal = page.slice(5, 13);
         const vertical = page.slice(13, 17);
 
         return (
-          <div key={idx}>
+          // Avaimena on tärkeä käyttää jotain uniikkia, esim. sivun indeksi + offset
+          <div key={initialOffset + pageIndex}>
             {featured.map((item) => (
               <FeaturedNews key={item.id} news={item} />
             ))}
             {list.map((item) => (
               <NewsCard key={item.id} news={item} />
             ))}
-            <NewsGridHorizontal newsList={horizontal} />
-            <NewsGridVertical newsList={vertical} />
+            {horizontal.length > 0 && (
+              <NewsGridHorizontal newsList={horizontal} />
+            )}
+            {vertical.length > 0 && <NewsGridVertical newsList={vertical} />}
           </div>
         );
       })}
 
       <div ref={triggerRef} style={{ height: 24 }} />
-      {loading && <div>Ladataan...</div>}
+      {loading && <div>Ladataan lisää...</div>}
       {error && <div>Virhe: {error.message}</div>}
-    </section>
+      {!loading && !hasMore && (
+        <div className="text-center p-4">Ei enempää uutisia.</div>
+      )}
+    </>
   );
 }
