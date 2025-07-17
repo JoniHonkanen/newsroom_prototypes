@@ -10,12 +10,15 @@ import { headers } from "next/headers";
 import type { NewsItem } from "@/types/news";
 import InfiniteNewsList from "@/components/InfiniteNewsList";
 import ApolloProvider from "@/providers/ApolloProvider";
+import EndOfNewsComponent from "@/components/endOfNews/EndOfNews";
 
 // Vakiot uutisten määrille
 const LIST_NEWS_COUNT = 3;
 const GRID_HORIZONTAL_COUNT = 8;
 const GRID_VERTICAL_COUNT = 4;
-const PAGE_SIZE = 17;
+const NEWS_LIMIT = LIST_NEWS_COUNT + GRID_HORIZONTAL_COUNT + GRID_VERTICAL_COUNT;
+const FEATURED_NEWS_LIMIT = 2;
+const TOTAL_LIMIT_SIZE = 100;
 
 export default async function Home() {
   // 1. Lue HTTP-headers Next 15 App Routerin avulla
@@ -26,11 +29,17 @@ export default async function Home() {
   const apolloClient = createApolloClient(nextHeaders);
 
   // 3. Kysy data SSR:ssä
-  const { data } = await apolloClient.query<{ news: NewsItem[] }>({
+  const { data } = await apolloClient.query<{
+    news: NewsItem[];
+    featuredNews: NewsItem[];
+  }>({
     query: GET_NEWS,
     variables: {
       offset: 0,
-      limit: PAGE_SIZE,
+      limit: NEWS_LIMIT,
+      featuredNewsLimit: FEATURED_NEWS_LIMIT,
+      featuredOffset: 0,
+      totalLimit: TOTAL_LIMIT_SIZE
     },
   });
 
@@ -39,28 +48,23 @@ export default async function Home() {
     return <p>No news available</p>;
   }
 
-  const news: NewsItem[] = data.news;
-  console.log("News:", news);
-
-  // 4. Jaotellaan tyypeittäin
-  const featureds = news.filter((n) => n.display_type === "featured");
-  const rest = news.filter((n) => n.display_type !== "featured");
+  const { news, featuredNews } = data;
 
   // Jaetaan rest-uutiset eri komponenteille
-  const listNews = rest.slice(0, LIST_NEWS_COUNT);
-  const gridHorizontalNews = rest.slice(
+  const listNews = news.slice(0, LIST_NEWS_COUNT);
+  const gridHorizontalNews = news.slice(
     LIST_NEWS_COUNT,
     LIST_NEWS_COUNT + GRID_HORIZONTAL_COUNT
   );
-  const gridVerticalNews = rest.slice(
+  const gridVerticalNews = news.slice(
     LIST_NEWS_COUNT + GRID_HORIZONTAL_COUNT,
     LIST_NEWS_COUNT + GRID_HORIZONTAL_COUNT + GRID_VERTICAL_COUNT
   );
 
   return (
     <main>
-      {featureds.length > 0 &&
-        featureds.map((item) => <FeaturedNews key={item.id} news={item} />)}
+      {featuredNews?.length > 0 &&
+        featuredNews.map((item) => <FeaturedNews key={item.id} news={item} />)}
 
       {listNews.length > 0 && (
         <section className={styles.newsListSection}>
@@ -84,10 +88,14 @@ export default async function Home() {
 
       {news.length > 0 ? (
         <ApolloProvider>
-          <InfiniteNewsList initialOffset={PAGE_SIZE} />
+          <InfiniteNewsList
+            initialOffset={NEWS_LIMIT}
+            initialFeaturedOffset={FEATURED_NEWS_LIMIT}
+            totalLimit={TOTAL_LIMIT_SIZE} // Asetetaan kokonaisraja
+          />
         </ApolloProvider>
       ) : (
-        <p>No news available</p>
+        <EndOfNewsComponent />
       )}
     </main>
   );

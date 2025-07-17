@@ -1,25 +1,30 @@
 # Newsroom Backend
 
-GraphQL-powered backend for newsroom management with PostgreSQL database integration.
+A GraphQL API server for managing news articles with PostgreSQL database integration.
 
-## Features
+## Tech Stack
 
-- GraphQL API for news article management
-- PostgreSQL database with pgvector extension support
-- CRUD operations for news articles
-- Filtering by language and status
-- JSON support for location_tags, sources, interviews, and body_blocks fields
+- **Node.js** with ES6 modules
+- **Express 5** - Web framework
+- **Apollo Server** - GraphQL server
+- **PostgreSQL** with pgvector - Database
+- **GraphQL** - API query language
 
-## Setup
+## Prerequisites
 
-1. Install dependencies:
+- Node.js 18+ 
+- PostgreSQL database running on port 15432
+- Database with `news_article` and `canonical_news` tables
 
+## Installation
+
+1. **Clone and install dependencies:**
 ```bash
 npm install
 ```
 
-2. Configure environment variables in `.env`:
-
+2. **Configure environment variables:**
+Create `.env` file:
 ```env
 DB_HOST=localhost
 DB_PORT=15432
@@ -29,20 +34,17 @@ DB_PASSWORD=your_password_here
 PORT=4000
 ```
 
-3. Ensure PostgreSQL database is running (database tables should already exist)
-
-## Running the Server
-
-### Development
-
-```bash
-npm run dev
-```
-
-### Production
-
+3. **Start the server:**
 ```bash
 npm start
 ```
 
-Server will start at `http://localhost:4000/graphql`
+For development with auto-restart:
+```bash
+npm run dev
+```
+
+## API Endpoints
+
+- **GraphQL API**: http://localhost:4000/graphql
+- **Health Check**: http://localhost:4000/health

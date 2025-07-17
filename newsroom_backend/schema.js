@@ -1,6 +1,30 @@
 import { gql } from "graphql-tag";
 
 export default gql`
+  type Location {
+    city: String
+    region: String
+    country: String
+    continent: String
+  }
+
+  type LocationTags {
+    locations: [Location!]!
+  }
+
+  type BodyBlock {
+    html: String
+    type: String!
+    order: Int
+    content: String
+  }
+
+  type Source {
+    url: String
+    title: String
+    source: String
+  }
+
   type NewsArticle {
     id: ID!
     canonical_news_id: Int!
@@ -9,24 +33,26 @@ export default gql`
     lead: String
     summary: String
     status: String
-    location_tags: String
-    sources: String
-    interviews: String
+    location_tags: LocationTags
+    sources: [Source!]
+    interviews: [String]
     review_status: String
     author: String
-    body_blocks: String
+    body_blocks: [BodyBlock!]
     enrichment_status: String
     markdown_content: String
     published_at: String
     updated_at: String
     original_article_type: String
+    featured: Boolean
   }
 
   type Query {
-    news(offset: Int, limit: Int): [NewsArticle!]!
+    news(offset: Int, limit: Int, totalLimit: Int): [NewsArticle!]!
     newsArticle(id: ID!): NewsArticle
     newsByLanguage(language: String!): [NewsArticle!]!
     newsByStatus(status: String!): [NewsArticle!]!
+    featuredNews(limit: Int, offset: Int, totalLimit: Int): [NewsArticle!]!
   }
 
   type Mutation {

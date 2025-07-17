@@ -1,8 +1,39 @@
 # Frontend
 
 - **Framework:** Next.js 15 (App Router)
-- **Internationalization:** i18n enabled
-- **Data fetching:** GraphQL
+- **Internationalization:** i18n enabled (next-intl)
+- **Data fetching:** GraphQL (Apollo Client)
+
+## Installation
+
+### Prerequisites
+- Node.js 18+ 
+- npm or yarn
+
+### Setup
+
+```bash
+# Clone the repository
+git clone
+cd newsroom_frontend
+
+# Install dependencies
+npm install
+
+# Run development server (with Turbopack)
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) to view the application.
+
+### Available Scripts
+
+```bash
+npm run dev          # Start development server with Turbopack
+npm run build        # Build for production
+npm run start        # Start production server
+npm run lint         # Run ESLint
+```
 
 ## Structure
 

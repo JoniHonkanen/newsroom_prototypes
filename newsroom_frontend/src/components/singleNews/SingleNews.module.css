@@ -1,91 +1,427 @@
-.content_wrapper {
-  max-width: 730px;
+/* SingleNews.module.css - Kultainen teema */
+
+.pageWrapper {
+  background-color: #1a1a1a;
+  color: #fff;
+  min-height: 100vh;
+}
+
+/* Hero Section */
+.heroSection {
+  position: relative;
+  height: 70vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.heroImage {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+}
+
+.heroImg {
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
+}
+
+.heroOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.3) 0%,
+    rgba(0, 0, 0, 0.7) 100%
+  );
+  z-index: 2;
+}
+
+.heroContent {
+  position: relative;
+  z-index: 3;
+  max-width: 800px;
   margin: 0 auto;
-  padding: 0 24px;
-  background: none;
+  padding: 0 2rem;
+  text-align: center;
+}
+
+.heroMeta {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.category {
+  background: rgba(184, 134, 11, 0.2);
+  color: #d97706;
+  backdrop-filter: blur(10px);
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border: 1px solid rgba(184, 134, 11, 0.3);
+}
+
+.featuredBadge {
+  background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+  color: #fff;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.heroTitle {
+  font-size: 3rem;
+  font-weight: 900;
+  line-height: 1.1;
+  margin-bottom: 1.5rem;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.heroLead {
+  font-size: 1.5rem;
+  line-height: 1.4;
+  margin-bottom: 2rem;
+  color: #e5e7eb;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.heroMetaInfo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.metaRow {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  font-size: 0.875rem;
+  color: #d1d5db;
+}
+
+.author {
+  color: #fff;
+  font-weight: 600;
+}
+
+.publishDate {
+  color: #d1d5db;
+}
+
+.readTime {
+  color: #a7a7a7;
+  font-size: 0.8rem;
+}
+
+.locationTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+.locationTag {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  padding: 0.25rem 0.75rem;
+  border-radius: 15px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Content Wrapper */
+.contentWrapper {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 3rem 2rem;
 }
 
 .article {
-  background: none;
-  color: #fff;
-  padding-top: 24px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  line-height: 1.7;
+  color: #e5e7eb;
 }
 
-.article-title {
-  font-size: 2.4rem;
-  font-weight: 700;
-  line-height: 1.08;
-  margin: 32px 0 20px 0;
-  color: #fff;
-  font-family: 'Georgia', 'Times New Roman', Times, serif;
-  word-break: break-word;
-}
-
-.article-summary {
+.articleSummary {
   font-size: 1.25rem;
-  font-weight: 400;
-  color: #e5e5e5;
-  margin-bottom: 24px;
-  line-height: 1.35;
-}
-
-.article-meta {
-  font-size: 1rem;
-  color: #bbb;
-  margin-bottom: 16px;
-  font-family: 'Roboto', Arial, sans-serif;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.article-image {
-  width: 100%;
-  max-width: 730px;
-  border-radius: 4px;
-  margin-bottom: 24px;
-  object-fit: cover;
-  display: block;
-  background: #1a1a1a;
-}
-
-.article-body {
-  font-size: 1.15rem;
-  color: #eee;
   line-height: 1.6;
-  font-family: 'Georgia', 'Times New Roman', Times, serif;
-  margin-bottom: 40px;
-  white-space: pre-line;
+  color: #d1d5db;
+  margin-bottom: 3rem;
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  border-left: 4px solid #d97706;
+  font-style: italic;
 }
 
-.article-date {
-  color: #999;
+/* Article Body */
+.articleBody {
+  margin-bottom: 4rem;
+}
+
+.paragraph {
+  font-size: 1.125rem;
+  line-height: 1.8;
+  margin-bottom: 1.5rem;
+  color: #e5e7eb;
+}
+
+.paragraph a {
+  color: #d97706;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(217, 119, 6, 0.3);
+  transition: all 0.2s ease;
+}
+
+.paragraph a:hover {
+  color: #f59e0b;
+  border-bottom-color: #f59e0b;
+}
+
+.heading {
+  font-weight: 700;
+  color: #fff;
+  margin: 3rem 0 1.5rem 0;
+  line-height: 1.2;
+}
+
+.heading:first-child {
+  margin-top: 0;
+}
+
+.h1 {
+  font-size: 2.5rem;
+  margin: 3rem 0 2rem 0;
+}
+
+.h2 {
+  font-size: 2rem;
+  margin: 2.5rem 0 1.5rem 0;
+}
+
+.h3 {
+  font-size: 1.5rem;
+  margin: 2rem 0 1rem 0;
+}
+
+.h4 {
+  font-size: 1.25rem;
+  margin: 1.5rem 0 0.75rem 0;
+}
+
+.h5,
+.h6 {
   font-size: 1rem;
+  margin: 1.25rem 0 0.5rem 0;
 }
 
-@media (max-width: 900px) {
-  .content_wrapper {
-    max-width: 100%;
-    padding: 0 12px;
+.blockquote {
+  margin: 2.5rem 0;
+  padding: 2rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  border-left: 4px solid #d97706;
+  font-style: italic;
+  font-size: 1.25rem;
+  color: #d1d5db;
+  backdrop-filter: blur(10px);
+}
+
+.list {
+  margin: 2rem 0;
+}
+
+.list ul,
+.list ol {
+  padding-left: 1.5rem;
+}
+
+.list li {
+  margin-bottom: 0.75rem;
+  font-size: 1.125rem;
+  line-height: 1.7;
+  color: #e5e7eb;
+}
+
+.list a {
+  color: #d97706;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(217, 119, 6, 0.3);
+  transition: all 0.2s ease;
+}
+
+.list a:hover {
+  color: #f59e0b;
+  border-bottom-color: #f59e0b;
+}
+
+.unknownBlock {
+  margin: 1.5rem 0;
+  font-size: 1.125rem;
+  line-height: 1.7;
+  color: #e5e7eb;
+}
+
+.markdownContent {
+  font-size: 1.125rem;
+  line-height: 1.8;
+  color: #e5e7eb;
+}
+
+.noContent {
+  font-size: 1rem;
+  color: #6b7280;
+  font-style: italic;
+  text-align: center;
+  padding: 3rem;
+}
+
+/* Article Footer */
+.articleFooter {
+  padding-top: 3rem;
+  border-top: 1px solid #333;
+  margin-top: 4rem;
+}
+
+.sources {
+  margin-bottom: 3rem;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 2rem;
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+}
+
+.sourcesTitle {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 1.5rem;
+}
+
+.sourcesList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sourceItem {
+  padding: 0.75rem 0;
+  font-size: 0.875rem;
+  color: #d1d5db;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sourceItem:last-child {
+  border-bottom: none;
+}
+
+.sourceLink {
+  color: #d97706;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.sourceLink:hover {
+  color: #f59e0b;
+}
+
+.articleInfo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.lastUpdated,
+.version {
+  margin: 0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .heroSection {
+    height: 50vh;
   }
-  .article-image {
-    max-width: 100%;
-    height: auto;
-  }
-  .article-title {
+  
+  .heroTitle {
     font-size: 2rem;
   }
+  
+  .heroLead {
+    font-size: 1.25rem;
+  }
+  
+  .heroContent {
+    padding: 0 1rem;
+  }
+  
+  .contentWrapper {
+    padding: 2rem 1rem;
+  }
+  
+  .metaRow {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .heroMeta {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .paragraph {
+    font-size: 1rem;
+  }
+  
+  .articleSummary {
+    font-size: 1.125rem;
+    padding: 1rem;
+  }
+  
+  .sources {
+    padding: 1.5rem;
+  }
+  
+  .articleInfo {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }
 
-@media (max-width: 600px) {
-  .article-title {
-    font-size: 1.4rem;
-    margin-top: 18px;
+@media (max-width: 480px) {
+  .heroTitle {
+    font-size: 1.75rem;
   }
-  .article-summary {
+  
+  .heroLead {
     font-size: 1rem;
   }
-  .article-body {
-    font-size: 1rem;
+  
+  .heroSection {
+    height: 40vh;
   }
 }

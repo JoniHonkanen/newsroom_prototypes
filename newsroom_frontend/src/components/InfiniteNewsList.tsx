@@ -7,91 +7,133 @@ import NewsCard from "./newsCard/NewsCard";
 import NewsGridHorizontal from "./newsGridHorizontal/NewsGridHorizontal";
 import NewsGridVertical from "./newsGridVertical/NewsGridVertical";
 import { NewsItem } from "@/types/news";
+import EndOfNewsComponent from "./endOfNews/EndOfNews";
 
 interface Props {
   initialOffset: number;
+  initialFeaturedOffset: number;
+  totalLimit: number;
 }
 
-export default function InfiniteNewsList({ initialOffset }: Props) {
-  // Tämä komponentti ei enää näytä mitään alussa, se vain lataa lisää taustalla
-  const [pages, setPages] = useState<NewsItem[][]>([]);
+interface PageData {
+  news: NewsItem[];
+  featuredNews: NewsItem[];
+}
+
+export default function InfiniteNewsList({
+  initialOffset,
+  initialFeaturedOffset,
+  totalLimit,
+}: Props) {
+  const [pages, setPages] = useState<PageData[]>([]);
   const [hasMore, setHasMore] = useState(true);
+  const [isFetching, setIsFetching] = useState(false);
   const PAGE_SIZE = 17;
 
   const [fetchNews, { loading, error }] = useLazyQuery(GET_NEWS, {
     notifyOnNetworkStatusChange: true,
     onCompleted: (data) => {
-      // Duplikaattien esto on edelleen tärkeä
-      if (data?.news && data.news.length > 0) {
-        setPages((prevPages) => {
-          const existingIds = new Set(prevPages.flat().map((item) => item.id));
-          const uniqueNewItems = data.news.filter(
-            (item: NewsItem) => !existingIds.has(item.id)
-          );
-          if (uniqueNewItems.length > 0) {
-            return [...prevPages, uniqueNewItems];
-          }
-          return prevPages;
-        });
+      if (data?.news || data?.featuredNews) {
+        const newPageData = {
+          news: data.news || [],
+          featuredNews: data.featuredNews || [],
+        };
+        setPages((prevPages) => [...prevPages, newPageData]);
       }
+
+      // Lopeta jos sai vähemmän kuin PAGE_SIZE
       if (!data?.news || data.news.length < PAGE_SIZE) {
         setHasMore(false);
       }
+
+      setIsFetching(false);
+    },
+    onError: () => {
+      setIsFetching(false);
     },
   });
 
   const triggerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    if (!triggerRef.current || !hasMore || loading) return;
+    if (!triggerRef.current || !hasMore || loading || isFetching) return;
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) {
-          // MUUTOS: Offset lasketaan initialOffsetin PÄÄLLE.
+        if (entry.isIntersecting && !isFetching && hasMore) {
+          setIsFetching(true);
+
           const nextOffset = initialOffset + pages.length * PAGE_SIZE;
-          fetchNews({ variables: { offset: nextOffset, limit: PAGE_SIZE } });
+          const nextFeaturedOffset = initialFeaturedOffset + pages.length;
+
+          fetchNews({
+            variables: {
+              offset: nextOffset,
+              limit: PAGE_SIZE,
+              featuredNewsLimit: 1,
+              featuredOffset: nextFeaturedOffset,
+              totalLimit: totalLimit,
+            },
+          });
         }
       },
-      { threshold: 0.1 }
+      {
+        threshold: 0.1,
+        rootMargin: "100px",
+      }
     );
 
     observer.observe(triggerRef.current);
     return () => observer.disconnect();
-  }, [pages, loading, hasMore, fetchNews, initialOffset]); // initialOffset lisätty dependency-listaan
+  }, [
+    pages,
+    loading,
+    hasMore,
+    isFetching,
+    fetchNews,
+    initialOffset,
+    initialFeaturedOffset,
+    totalLimit,
+  ]);
 
-  // Komponentti renderöi vain lataamansa SIVUT, ei ensimmäistä sivua.
   return (
     <>
-      {pages.map((page, pageIndex) => {
-        const featured = page.slice(0, 2);
-        const list = page.slice(2, 5);
-        const horizontal = page.slice(5, 13);
-        const vertical = page.slice(13, 17);
+      {pages.map((pageData, pageIndex) => {
+        const { news, featuredNews } = pageData;
+
+        const listNews = news.slice(0, 3);
+        const horizontalNews = news.slice(3, 11);
+        const verticalNews = news.slice(11, 15);
 
         return (
-          // Avaimena on tärkeä käyttää jotain uniikkia, esim. sivun indeksi + offset
           <div key={initialOffset + pageIndex}>
-            {featured.map((item) => (
-              <FeaturedNews key={item.id} news={item} />
-            ))}
-            {list.map((item) => (
-              <NewsCard key={item.id} news={item} />
-            ))}
-            {horizontal.length > 0 && (
-              <NewsGridHorizontal newsList={horizontal} />
+            {/* Featured uutiset */}
+            {featuredNews?.length > 0 &&
+              featuredNews.map((item) => (
+                <FeaturedNews key={item.id} news={item} />
+              ))}
+
+            {/* List uutiset */}
+            {listNews.length > 0 &&
+              listNews.map((item) => <NewsCard key={item.id} news={item} />)}
+
+            {/* Horizontal grid */}
+            {horizontalNews.length > 0 && (
+              <NewsGridHorizontal newsList={horizontalNews} />
             )}
-            {vertical.length > 0 && <NewsGridVertical newsList={vertical} />}
+
+            {/* Vertical grid */}
+            {verticalNews.length > 0 && (
+              <NewsGridVertical newsList={verticalNews} />
+            )}
           </div>
         );
       })}
 
       <div ref={triggerRef} style={{ height: 24 }} />
-      {loading && <div>Ladataan lisää...</div>}
+      {(loading || isFetching) && <div>Ladataan lisää...</div>}
       {error && <div>Virhe: {error.message}</div>}
-      {!loading && !hasMore && (
-        <div className="text-center p-4">Ei enempää uutisia.</div>
-      )}
+      {!loading && !isFetching && !hasMore && <EndOfNewsComponent />}
     </>
   );
 }

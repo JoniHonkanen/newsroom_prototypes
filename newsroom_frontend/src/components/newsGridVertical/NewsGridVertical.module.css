@@ -4,15 +4,14 @@
   gap: 0rem 1rem;
   position: relative;
   border-bottom: 1px solid white;
-  padding: 2rem 0rem 1rem 0rem
+  padding: 1rem 0rem 1rem 0rem;
 }
 
 .card {
-  /* kortin sisäiset tyylit */
   position: relative;
   padding: 0rem 0rem 1rem 0rem;
   min-height: 140px;
-  color: #fff;
+  color: inherit;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
@@ -25,33 +24,53 @@
   padding-right: 0 !important;
 }
 
+/* Vertikaaliset viivat - päivitetty gap:n keskelle */
 .card:not(:nth-child(4n))::after {
   content: "";
   opacity: 0.5;
   pointer-events: none;
   background: #333;
   width: 1px;
-  height: 90%;
+  height: 100%;
   position: absolute;
   top: 50%;
-  right: 0;
+  right: -0.5rem; /* Siirretty gap:n keskelle */
   transform: translateY(-50%);
+  z-index: 1;
 }
 
-/* Yläviiva */
+/* Horisontaaliset viivat - päivitetty gap:n keskelle */
 .card:nth-child(n + 5)::before {
   content: "";
   position: absolute;
-  top: 0;
-  right: 0;
+  top: -0rem; /* Koska gap on 0 pystysuunnassa */
   left: 50%;
   transform: translateX(-50%);
-  width: 90%; /* SAMA arvo kuin pystyviivan korkeus! */
-  margin: 0 auto;
+  width: 100%;
   height: 1px;
   background: #333;
   opacity: 0.5;
   pointer-events: none;
+  z-index: 1;
+}
+
+/* LINKKI: Saa koko kortin klikkauskelpoiseksi */
+.cardLink {
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+  border-radius: 4px;
+  position: relative;
+  z-index: 2; /* Varmistaa että linkki on viivojen päällä */
+}
+
+.cardLink:hover {
+  color: #d1d5db;
 }
 
 .content {
@@ -59,6 +78,7 @@
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
+  padding-top: 10px;
 }
 
 .imgBox {
@@ -81,34 +101,40 @@
 }
 
 .title {
-  font-size: 1.25rem;
+  font-size: 1.1rem;
   font-weight: 600;
   line-height: 1.18;
   margin-bottom: 0.7em;
 }
 
 .time {
-  font-size: 1rem;
-  color: #bbb;
+  font-size: .8rem;
+  color: #a7a7a7;
   margin-top: auto;
 }
 
+/* Responsiivisuus */
 @media (max-width: 1050px) {
   .grid {
     grid-template-columns: 1fr 1fr;
+  }
+  
+  /* Päivitetään viivat 2-sarakkeiselle layoutille */
+  .card:not(:nth-child(2n))::after {
+    display: block;
+  }
+  .card:nth-child(2n)::after {
+    display: none;
+  }
+  
+  .card:nth-child(n + 3)::before {
+    display: block;
   }
 }
 
 @media (max-width: 900px) {
   .grid {
     grid-template-columns: repeat(2, 1fr);
-  }
-  .card {
-    border-top: none;
-  }
-  .card:nth-child(n + 3) {
-    border-top: 1px solid #333;
-    margin-top: 1.5rem;
   }
 }
 
@@ -117,6 +143,13 @@
     grid-template-columns: 1fr;
     gap: 0.5rem 0;
   }
+  
+  /* Piilotetaan kaikki viivat yksisarakkeisessa layoutissa */
+  .card::before,
+  .card::after {
+    display: none;
+  }
+  
   .imgBox {
     width: 100%;
     height: 200px;
@@ -125,5 +158,9 @@
   }
   .title {
     margin-right: 0;
+  }
+  
+  .cardLink {
+    flex-direction: column;
   }
 }

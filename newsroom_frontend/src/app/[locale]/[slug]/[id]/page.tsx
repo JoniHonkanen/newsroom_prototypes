@@ -22,9 +22,7 @@ export default async function NewsPage({ params }: { params: NewsPageParams }) {
 
   //extract id from idWithSlug
   const id = idWithSlug.split("-")[0];
-  console.log("Extracted ID with slug:", idWithSlug);
   if (!id || isNaN(Number(id))) return notFound();
-  console.log("Extracted ID:", id);
 
   const headerObj = await headers();
   const nextHeaders = Object.fromEntries(headerObj.entries());
@@ -34,12 +32,11 @@ export default async function NewsPage({ params }: { params: NewsPageParams }) {
   //remember that newsArticle need to be defined in the GraphQL schema
   const { data } = await apolloClient.query<{ newsArticle: NewsItem }>({
     query: GET_NEWS_ITEM,
-    variables: { id },
+    variables: { newsArticleId: id },
   });
+
   const news = data?.newsArticle;
   if (!news) return notFound();
-
-  console.log("Fetched News Item:", news);
 
   // Välitä uutinen ja locale komponentille
   return <SingleNews news={news} locale={locale} />;
