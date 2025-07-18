@@ -39,7 +39,9 @@ export default async function Home() {
       limit: NEWS_LIMIT,
       featuredNewsLimit: FEATURED_NEWS_LIMIT,
       featuredOffset: 0,
-      totalLimit: TOTAL_LIMIT_SIZE
+      totalLimit: TOTAL_LIMIT_SIZE,
+      orderBy: { field: 'ID', order: 'DESC' },
+      featuredOrderBy: { field: 'ID', order: 'DESC' }
     },
   });
 

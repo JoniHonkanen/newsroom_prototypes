@@ -73,6 +73,8 @@ export default function InfiniteNewsList({
               featuredNewsLimit: 1,
               featuredOffset: nextFeaturedOffset,
               totalLimit: totalLimit,
+              orderBy: { field: "ID", order: "DESC" },
+              featuredOrderBy: { field: "ID", order: "DESC" },
             },
           });
         }

@@ -23,7 +23,7 @@ const removeMarkdownSyntax = (text) => {
 export default {
   Query: {
     // Hae kaikki uutiset
-    news: async (_, { offset, limit, totalLimit }) => {
+    news: async (_, { offset, limit, totalLimit, orderBy }) => {
       try {
         const effectiveLimit = limit || 17;
         const effectiveOffset = offset || 0;
@@ -36,6 +36,30 @@ export default {
           return [];
         }
 
+        // Käsittele järjestäminen
+        let orderByClause = "ORDER BY published_at DESC"; // Default
+
+        if (orderBy) {
+          const sortOrder = orderBy.order === "ASC" ? "ASC" : "DESC";
+
+          switch (orderBy.field) {
+            case "ID":
+              orderByClause = `ORDER BY id ${sortOrder}`;
+              break;
+            case "PUBLISHED_AT":
+              orderByClause = `ORDER BY published_at ${sortOrder}`;
+              break;
+            case "UPDATED_AT":
+              orderByClause = `ORDER BY updated_at ${sortOrder}`;
+              break;
+            case "CANONICAL_NEWS_ID":
+              orderByClause = `ORDER BY canonical_news_id ${sortOrder}`;
+              break;
+            default:
+              orderByClause = "ORDER BY published_at DESC";
+          }
+        }
+
         const result = await pool.query(
           `
       SELECT 
@@ -43,7 +67,7 @@ export default {
         published_at, updated_at
       FROM news_article 
       WHERE COALESCE(featured, false) = false
-      ORDER BY published_at DESC
+      ${orderByClause}
       LIMIT $1 OFFSET $2
     `,
           [finalLimit, effectiveOffset]
@@ -65,7 +89,7 @@ export default {
       }
     },
 
-    featuredNews: async (_, { limit, offset, totalLimit }) => {
+    featuredNews: async (_, { limit, offset, totalLimit, orderBy }) => {
       try {
         const effectiveLimit = limit || 2;
         const effectiveOffset = offset || 0;
@@ -78,6 +102,30 @@ export default {
           return [];
         }
 
+        // Käsittele järjestäminen
+        let orderByClause = "ORDER BY published_at DESC"; // Default
+
+        if (orderBy) {
+          const sortOrder = orderBy.order === "ASC" ? "ASC" : "DESC";
+
+          switch (orderBy.field) {
+            case "ID":
+              orderByClause = `ORDER BY id ${sortOrder}`;
+              break;
+            case "PUBLISHED_AT":
+              orderByClause = `ORDER BY published_at ${sortOrder}`;
+              break;
+            case "UPDATED_AT":
+              orderByClause = `ORDER BY updated_at ${sortOrder}`;
+              break;
+            case "CANONICAL_NEWS_ID":
+              orderByClause = `ORDER BY canonical_news_id ${sortOrder}`;
+              break;
+            default:
+              orderByClause = "ORDER BY published_at DESC";
+          }
+        }
+
         const result = await pool.query(
           `
       SELECT 
@@ -86,7 +134,7 @@ export default {
         published_at, updated_at, featured
       FROM news_article 
       WHERE featured = true
-      ORDER BY published_at DESC
+      ${orderByClause}
       LIMIT $1 OFFSET $2
     `,
           [finalLimit, effectiveOffset]

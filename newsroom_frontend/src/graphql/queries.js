@@ -7,8 +7,15 @@ export const GET_NEWS = gql`
     $featuredNewsLimit: Int
     $featuredOffset: Int
     $totalLimit: Int
+    $orderBy: NewsOrderBy
+    $featuredOrderBy: NewsOrderBy
   ) {
-    news(offset: $offset, limit: $limit, totalLimit: $totalLimit) {
+    news(
+      offset: $offset
+      limit: $limit
+      totalLimit: $totalLimit
+      orderBy: $orderBy
+    ) {
       id
       language
       lead
@@ -20,6 +27,7 @@ export const GET_NEWS = gql`
       offset: $featuredOffset
       limit: $featuredNewsLimit
       totalLimit: $totalLimit
+      orderBy: $featuredOrderBy
     ) {
       id
       language

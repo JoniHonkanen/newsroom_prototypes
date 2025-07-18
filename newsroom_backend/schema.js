@@ -47,12 +47,30 @@ export default gql`
     featured: Boolean
   }
 
+  enum SortOrder {
+    ASC
+    DESC
+  }
+
+  enum NewsOrderField {
+    ID
+    PUBLISHED_AT
+    UPDATED_AT
+    CANONICAL_NEWS_ID
+  }
+
+  # OrderBy input-tyyppi
+  input NewsOrderBy {
+    field: NewsOrderField!
+    order: SortOrder!
+  }
+
   type Query {
-    news(offset: Int, limit: Int, totalLimit: Int): [NewsArticle!]!
+    news(offset: Int, limit: Int, totalLimit: Int, orderBy: NewsOrderBy): [NewsArticle!]!
     newsArticle(id: ID!): NewsArticle
     newsByLanguage(language: String!): [NewsArticle!]!
     newsByStatus(status: String!): [NewsArticle!]!
-    featuredNews(limit: Int, offset: Int, totalLimit: Int): [NewsArticle!]!
+    featuredNews(limit: Int, offset: Int, totalLimit: Int, orderBy: NewsOrderBy): [NewsArticle!]!
   }
 
   type Mutation {
