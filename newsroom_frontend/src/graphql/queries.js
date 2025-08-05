@@ -136,3 +136,27 @@ export const GET_NEWS_BY_CATEGORY = gql`
     }
   }
 `;
+
+// SIMILAR ARTICLES
+export const GET_SIMILAR_ARTICLES = gql`
+  query GetSimilarArticles(
+    $articleId: Int!
+    $limit: Int
+    $minSimilarity: Float
+    $maxAgeDays: Int
+  ) {
+    similarArticles(
+      articleId: $articleId
+      limit: $limit
+      minSimilarity: $minSimilarity
+      maxAgeDays: $maxAgeDays
+    ) {
+      id
+      language
+      lead
+      summary
+      published_at
+      updated_at
+    }
+  }
+`;

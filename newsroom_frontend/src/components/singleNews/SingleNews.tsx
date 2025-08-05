@@ -2,6 +2,8 @@ import { NewsItem, BodyBlock } from "@/types/news";
 import styles from "./SingleNews.module.css";
 import { JSX } from "react";
 import Image from "next/image";
+import SimilarArticles from "../SimilarNews";
+import ApolloProvider from "@/providers/ApolloProvider";
 
 export function SingleNews({
   news,
@@ -10,6 +12,7 @@ export function SingleNews({
   news: NewsItem;
   locale: string;
 }) {
+  console.log(news);
   // Funktio lukuajan arvioimiseen sanojen määrän perusteella
   const estimateReadTime = (content: string): number => {
     if (!content) return 1;
@@ -293,6 +296,14 @@ export function SingleNews({
             </div>
           </footer>
         </article>
+        <ApolloProvider>
+          <SimilarArticles
+            articleId={parseInt(String(news.id))}
+            limit={5}
+            minSimilarity={0.4}
+            locale={locale}
+          />
+        </ApolloProvider>
       </div>
     </div>
   );

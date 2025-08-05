@@ -22,6 +22,6 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/components/mainNewsSection/MainNewsSection.jsx"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/components/mainNewsSection/MainNewsSection.jsx", "src/components/SimilarNews.jsx"],
   "exclude": ["node_modules"]
 }
