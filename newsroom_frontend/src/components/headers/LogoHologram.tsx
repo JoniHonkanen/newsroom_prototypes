@@ -61,7 +61,7 @@ export default function LogoHologram() {
       style={{
         display: "block",
         width: "100%",
-        maxWidth: 300, // <-- MUUTETTU: Kokeile tätä tai muuta sopivaa arvoa
+        maxWidth: 300,
         height: "auto",
         cursor: "pointer",
       }}
@@ -99,7 +99,7 @@ export default function LogoHologram() {
             fontWeight="bold"
             fill="#fff"
           >
-            UutisLogo
+            Newsroom
           </text>
         </mask>
         <radialGradient id="shine" cx="50%" cy="50%" r="40%">
@@ -151,7 +151,7 @@ export default function LogoHologram() {
           fontWeight="bold"
           fill="#fff"
         >
-          UutisLogo
+          Newsroom
         </text>
       )}
 

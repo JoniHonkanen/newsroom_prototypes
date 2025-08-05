@@ -108,12 +108,14 @@
   font-weight: 600;
   line-height: 1.18;
   margin-bottom: 0.7em;
+  font-family: "Lora", Georgia, serif;
 }
 
 .time {
   font-size: .8rem;
   color: #a7a7a7;
   margin-top: auto;
+  font-family: "Roboto", sans-serif;
 }
 
 /* Responsiivisuus */

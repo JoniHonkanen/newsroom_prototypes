@@ -47,6 +47,7 @@
   font-size: 1.25rem;
   font-weight: bold;
   line-height: 1.2;
+  font-family: "Lora", Georgia, serif;
 }
 
 .meta {
@@ -56,6 +57,7 @@
   display: flex;
   gap: 1rem;
   flex-wrap: wrap;
+  font-family: "Roboto", sans-serif;
 }
 
 .time,

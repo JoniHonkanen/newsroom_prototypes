@@ -162,7 +162,10 @@ export function SingleNews({
       <div className={styles.heroSection}>
         <div className={styles.heroImage}>
           <Image
-            src={news.image_url || "https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=800&q=80"}
+            src={
+              news.image_url ||
+              "https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=800&q=80"
+            }
             alt={news.title || "Uutiskuva"}
             fill
             className={styles.heroImg}
@@ -171,23 +174,19 @@ export function SingleNews({
           />
           <div className={styles.heroOverlay} />
         </div>
-        
+
         <div className={styles.heroContent}>
           <div className={styles.heroMeta}>
             {news.main_category && (
               <span className={styles.category}>{news.main_category}</span>
             )}
             {news.featured && (
-              <span className={styles.featuredBadge}>FEATURED</span>
+              <span className={styles.featuredBadge}>HOT🔥</span>
             )}
           </div>
-          
-          <h1 className={styles.heroTitle}>{news.title}</h1>
-          
-          {news.lead && (
-            <div className={styles.heroLead}>{news.lead}</div>
-          )}
-          
+
+          {news.lead && <h1 className={styles.heroLead}>{news.lead}</h1>}
+
           <div className={styles.heroMetaInfo}>
             <div className={styles.metaRow}>
               {news.author && (
@@ -207,7 +206,7 @@ export function SingleNews({
               )}
               <span className={styles.readTime}>{readTime} min read</span>
             </div>
-            
+
             {news.location_tags?.locations?.length && (
               <div className={styles.locationTags}>{renderLocationTags()}</div>
             )}

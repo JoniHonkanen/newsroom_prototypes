@@ -18,7 +18,6 @@ export default function NewsGridHorizontal({
   return (
     <div className={styles.grid}>
       {newsList.map((news) => {
-        console.log("News item:", news);
         const slug = SLUGS[locale as keyof typeof SLUGS] || "uutinen";
         const url = `/${locale}/${slug}/${news.id}-${
           news.url_slug || "uutinen"

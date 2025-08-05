@@ -38,33 +38,13 @@ export const GET_NEWS = gql`
       updated_at
       featured
     }
-  }
-`;
-
-/* export const GET_NEWS = gql`
-  query GetNews {
-    news {
+    topCategories(limit: 8) {
+      count
       id
-      canonical_news_id
-      language
-      version
-      lead
-      summary
-      status
-      location_tags
-      sources
-      interviews
-      review_status
-      author
-      body_blocks
-      enrichment_status
-      markdown_content
-      published_at
-      updated_at
-      original_article_type
+      slug
     }
   }
-`; */
+`;
 
 export const GET_NEWS_ITEM = gql`
   query NewsArticle($newsArticleId: ID!) {
@@ -104,6 +84,55 @@ export const GET_NEWS_ITEM = gql`
       updated_at
       original_article_type
       featured
+    }
+  }
+`;
+
+export const GET_NEWS_BY_CATEGORY = gql`
+  query GetNewsByCategory(
+    $categorySlug: String!
+    $limit: Int
+    $offset: Int
+    $featuredNewsLimit: Int
+    $featuredOffset: Int
+    $totalLimit: Int
+    $orderBy: NewsOrderBy
+    $featuredOrderBy: NewsOrderBy
+  ) {
+    newsByCategory(
+      categorySlug: $categorySlug
+      limit: $limit
+      offset: $offset
+      totalLimit: $totalLimit
+      orderBy: $orderBy
+    ) {
+      id
+      language
+      lead
+      summary
+      published_at
+      updated_at
+    }
+    featuredNewsByCategory(
+      categorySlug: $categorySlug
+      offset: $featuredOffset
+      limit: $featuredNewsLimit
+      totalLimit: $totalLimit
+      orderBy: $featuredOrderBy
+    ) {
+      id
+      language
+      lead
+      summary
+      author
+      published_at
+      updated_at
+      featured
+    }
+    topCategories(limit: 8) {
+      count
+      id
+      slug
     }
   }
 `;

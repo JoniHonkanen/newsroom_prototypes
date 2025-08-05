@@ -1,38 +1,31 @@
+// /src/components/headers/SubHeader.jsx - Lopullinen versio
+
+"use client";
+
 import Link from "next/link";
+import { useParams } from "next/navigation";
 import styles from "./SubHeader.module.css";
 
-export default function SubHeader() {
+function capitalize(str) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+export default function SubHeader({ topCategories }) {
+  const params = useParams();
+  const locale = params?.locale || "fi";
 
   return (
     <header className={styles.subheader}>
       <nav className={styles.nav}>
-        <Link href="/" className={styles.category}>
-          Politics
-        </Link>
-        <Link href="/" className={styles.category}>
-          Opinions
-        </Link>
-        <Link href="/" className={styles.category}>
-          Style
-        </Link>
-        <Link href="/" className={styles.category}>
-          Investigations
-        </Link>
-        <Link href="/" className={styles.category}>
-          Climate
-        </Link>
-        <Link href="/" className={styles.category}>
-          Well-Being
-        </Link>
-        <Link href="/" className={styles.category}>
-          Business
-        </Link>
-        <Link href="/" className={styles.category}>
-          Tech
-        </Link>
-        <Link href="/" className={styles.category}>
-          World
-        </Link>
+        {topCategories.map((category) => (
+          <Link 
+            key={category.id} 
+            href={`/${locale}?category=${category.slug}`}
+            className={styles.category}
+          >
+            {`${capitalize(category.slug)} (${category.count})`}
+          </Link>
+        ))}
       </nav>
     </header>
   );

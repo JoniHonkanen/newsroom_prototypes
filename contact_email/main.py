@@ -99,6 +99,10 @@ def send_email_tool(
     msg_id = generate_message_id()
     msg["Message-ID"] = msg_id
 
+    print(
+        f"TÄÄ TÄÄ TÄÄ Sending email to {to} with subject '{subject}' and Message-ID: {msg_id}"
+    )
+
     try:
         with smtplib.SMTP(email_host, email_port) as smtp:
             smtp.starttls()
@@ -345,14 +349,14 @@ def auto_link_urls(text: str) -> str:
 
 
 if __name__ == "__main__":
-    # success, message, msg_id = send_and_store_email(mockdata, db_path="test.db")
-    # if success:
-    #   print(message)
-    # else:
-    #   print(f"Virhe sähköpostin lähetyksessä: {message}")
+    success, message, msg_id = send_and_store_email(mockdata, db_path="test.db")
+    if success:
+        print(message)
+    else:
+        print(f"Virhe sähköpostin lähetyksessä: {message}")
 
-    read_email_tool(
+    """ read_email_tool(
         folder="INBOX",
         unseen_only=True,
     )
-    # inspect_db("test.db")
+    inspect_db("test.db") """

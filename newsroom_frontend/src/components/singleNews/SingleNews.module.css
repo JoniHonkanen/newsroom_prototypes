@@ -72,6 +72,7 @@
   text-transform: uppercase;
   letter-spacing: 0.5px;
   border: 1px solid rgba(184, 134, 11, 0.3);
+  
 }
 
 .featuredBadge {
@@ -102,6 +103,7 @@
   margin-left: auto;
   margin-right: auto;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  font-family: "Lora", Georgia, serif;
 }
 
 .heroMetaInfo {
@@ -120,17 +122,19 @@
 }
 
 .author {
-  color: #fff;
+  color: #a7a7a7;
   font-weight: 600;
+  font-family: "Roboto", sans-serif;
 }
 
 .publishDate {
-  color: #d1d5db;
+  color: #a7a7a7;
+  font-family: "Roboto", sans-serif;
 }
 
 .readTime {
   color: #a7a7a7;
-  font-size: 0.8rem;
+  font-family: "Roboto", sans-serif;
 }
 
 .locationTags {
@@ -138,6 +142,7 @@
   flex-wrap: wrap;
   gap: 0.5rem;
   justify-content: center;
+  font-family: "Roboto", sans-serif;
 }
 
 .locationTag {
@@ -152,7 +157,7 @@
 
 /* Content Wrapper */
 .contentWrapper {
-  max-width: 800px;
+  max-width: 750px;
   margin: 0 auto;
   padding: 3rem 2rem;
 }
@@ -165,7 +170,7 @@
 
 .articleSummary {
   font-size: 1.25rem;
-  line-height: 1.6;
+  line-height: 1.2;
   color: #d1d5db;
   margin-bottom: 3rem;
   padding: 1.5rem;
@@ -173,6 +178,7 @@
   border-radius: 12px;
   border-left: 4px solid #d97706;
   font-style: italic;
+  font-family: "Roboto", sans-serif;
 }
 
 /* Article Body */
@@ -182,9 +188,10 @@
 
 .paragraph {
   font-size: 1.125rem;
-  line-height: 1.8;
+  line-height: 1.45;
   margin-bottom: 1.5rem;
   color: #e5e7eb;
+  font-family: "Roboto", sans-serif;
 }
 
 .paragraph a {
@@ -204,6 +211,7 @@
   color: #fff;
   margin: 3rem 0 1.5rem 0;
   line-height: 1.2;
+  font-family: "Lora", Georgia, serif;
 }
 
 .heading:first-child {
@@ -211,17 +219,17 @@
 }
 
 .h1 {
-  font-size: 2.5rem;
+  font-size: 2.2rem;
   margin: 3rem 0 2rem 0;
 }
 
 .h2 {
-  font-size: 2rem;
+  font-size: 1.6rem;
   margin: 2.5rem 0 1.5rem 0;
 }
 
 .h3 {
-  font-size: 1.5rem;
+  font-size: 1.4rem;
   margin: 2rem 0 1rem 0;
 }
 
@@ -307,7 +315,7 @@
 .sources {
   margin-bottom: 3rem;
   background: rgba(255, 255, 255, 0.05);
-  padding: 2rem;
+  padding: 1.5rem;
   border-radius: 12px;
   backdrop-filter: blur(10px);
 }
@@ -320,13 +328,14 @@
 }
 
 .sourcesList {
+  font-family: var(--font-roboto);
   list-style: none;
   padding: 0;
   margin: 0;
 }
 
 .sourceItem {
-  padding: 0.75rem 0;
+  padding: 0.5rem 0;
   font-size: 0.875rem;
   color: #d1d5db;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
@@ -403,7 +412,7 @@
   }
   
   .sources {
-    padding: 1.5rem;
+    padding: 1.25rem;
   }
   
   .articleInfo {

@@ -8,7 +8,7 @@ const SLUGS = { fi: "uutinen", en: "news", sv: "nyhet" };
 
 export default function NewsCard({ news }: { news: NewsItem }) {
   const locale = useLocale();
-  
+
   // Use published_at if available, fallback to updated_at or created_at
   const displayDate = news.published_at || news.updated_at || news.created_at;
   const formattedTime = displayDate
@@ -19,7 +19,7 @@ export default function NewsCard({ news }: { news: NewsItem }) {
     : "";
 
   const slug = SLUGS[locale as keyof typeof SLUGS] || "uutinen";
-  const url = `/${locale}/${slug}/${news.id}-${news.url_slug || 'uutinen'}`;
+  const url = `/${locale}/${slug}/${news.id}-${news.url_slug || "uutinen"}`;
 
   return (
     <article className={styles.card}>
@@ -27,11 +27,9 @@ export default function NewsCard({ news }: { news: NewsItem }) {
         <div className={styles.content}>
           <div className={styles.category}>{news.main_category}</div>
 
-          <h3 className={styles.title}>{news.title}</h3>
+          <h3 className={styles.title}>{news.lead}</h3>
 
-          {/* Show lead if available, fallback to summary */}
-          {news.lead && <p className={styles.lead}>{news.lead}</p>}
-          {!news.lead && news.summary && (
+          {news.lead && news.summary && (
             <p className={styles.summary}>{news.summary}</p>
           )}
 
@@ -39,7 +37,9 @@ export default function NewsCard({ news }: { news: NewsItem }) {
             {formattedTime && (
               <span className={styles.time}>{formattedTime}</span>
             )}
-            {news.author && <span className={styles.author}>{news.author}</span>}
+            {news.author && (
+              <span className={styles.author}>{news.author}</span>
+            )}
             {news.read_time_minutes && (
               <span className={styles.readTime}>
                 {news.read_time_minutes} min
@@ -79,7 +79,9 @@ export default function NewsCard({ news }: { news: NewsItem }) {
                             key={`${index}-${locIndex}`}
                             className={styles.locationTag}
                           >
-                            {location.city || location.region || location.country}
+                            {location.city ||
+                              location.region ||
+                              location.country}
                           </span>
                         )
                       );

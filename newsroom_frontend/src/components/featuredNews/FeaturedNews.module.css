@@ -53,12 +53,14 @@
   font-weight: bold;
   line-height: 1.1;
   margin-bottom: 1rem;
+  font-family: "Lora", Georgia, serif;
 }
 
 .summary {
   color: #d1d5db; /* vaaleanharmaa, tai haluamasi */
   font-size: 1rem;
   margin-bottom: 1.5rem;
+  font-family: "Inter", sans-serif;
 }
 
 .meta {
@@ -68,6 +70,7 @@
   display: flex;
   flex-direction: column;
   gap: 0.15em; /* halutessasi pientä väliä */
+  font-family: "Roboto", sans-serif;
 }
 
 @media (max-width: 600px) {

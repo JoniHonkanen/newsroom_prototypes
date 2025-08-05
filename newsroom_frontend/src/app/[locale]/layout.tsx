@@ -1,26 +1,49 @@
 import React from "react";
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, UnifrakturCook } from "next/font/google";
+import {
+  Roboto,
+  Inter,
+  Lora,
+  UnifrakturCook,
+  Crimson_Text,
+} from "next/font/google";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
 
 import "../globals.css";
 import Header from "@/components/headers/Header";
-import SubHeader from "@/components/headers/SubHeader";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+
+const lora = Lora({
   subsets: ["latin"],
+  display: "swap",
+  variable: "--font-lora",
 });
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+
+const inter = Inter({
   subsets: ["latin"],
+  display: "swap",
+  variable: "--font-inter",
 });
+
+const roboto = Roboto({
+  weight: ["400", "500", "700"],
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-roboto",
+});
+
 const unifrakturCook = UnifrakturCook({
-  variable: "--font-unifraktur-cook",
   subsets: ["latin"],
   weight: "700",
+  variable: "--font-unifraktur-cook",
+});
+
+const crimsonText = Crimson_Text({
+  subsets: ["latin"],
+  weight: "400",
+  variable: "--font-crimson-text",
 });
 
 export const metadata: Metadata = {
@@ -41,19 +64,14 @@ export default async function LocaleLayout({
     notFound();
   }
 
-  console.log(`Rendering layout for locale: ${locale}`);
-
   return (
     <html lang={locale}>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${unifrakturCook.variable} font-sans`}
+        className={`${roboto.variable} ${lora.variable} ${inter.variable} ${unifrakturCook.variable} ${crimsonText.variable}`}
       >
         <NextIntlClientProvider locale={locale}>
           <Header />
-          <div className="content_wrapper">
-            <SubHeader />
-            {children}
-          </div>
+          <div className="content_wrapper">{children}</div>
         </NextIntlClientProvider>
       </body>
     </html>
