@@ -22,6 +22,7 @@ export const GET_NEWS = gql`
       summary
       published_at
       updated_at
+      categories
     }
     featuredNews(
       offset: $featuredOffset
@@ -36,6 +37,7 @@ export const GET_NEWS = gql`
       author
       published_at
       updated_at
+      categories
       featured
     }
     topCategories(limit: 8) {
@@ -56,6 +58,7 @@ export const GET_NEWS_ITEM = gql`
       lead
       summary
       status
+      categories
       location_tags {
         locations {
           city
@@ -112,6 +115,7 @@ export const GET_NEWS_BY_CATEGORY = gql`
       summary
       published_at
       updated_at
+      categories
     }
     featuredNewsByCategory(
       categorySlug: $categorySlug
@@ -127,6 +131,7 @@ export const GET_NEWS_BY_CATEGORY = gql`
       author
       published_at
       updated_at
+      categories
       featured
     }
     topCategories(limit: 8) {
@@ -157,6 +162,7 @@ export const GET_SIMILAR_ARTICLES = gql`
       summary
       published_at
       updated_at
+      categories
     }
   }
 `;

@@ -23,13 +23,26 @@ export default function NewsGridHorizontal({
           news.url_slug || "uutinen"
         }`;
 
+        // Hae ensimmäinen kategoria
+        const firstCategory = news.categories && news.categories.length > 0 
+          ? news.categories[0].charAt(0).toUpperCase() + news.categories[0].slice(1)
+          : null;
+
+        // Käytä alkuperäistä getRelativeTime funktiota
+        const relativeTime = news.published_at ? getRelativeTime(news.published_at) : "";
+
         return (
           <article key={news.id} className={styles.card}>
             <Link href={url} className={styles.cardLink}>
               <div className={styles.content}>
                 <h3 className={styles.title}>{news.lead}</h3>
-                <div className={styles.time}>
-                  {news.published_at ? getRelativeTime(news.published_at) : ""}
+                <div className={styles.meta}>
+                  {firstCategory && (
+                    <span className={styles.category}>{firstCategory}</span>
+                  )}
+                  {relativeTime && (
+                    <span className={styles.time}>{relativeTime}</span>
+                  )}
                 </div>
               </div>
               <div className={styles.imgBox}>

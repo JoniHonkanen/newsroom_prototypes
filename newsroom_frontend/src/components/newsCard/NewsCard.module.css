@@ -77,7 +77,12 @@
 }
 
 .language {
-  color: #d1d5db;
+  color: inherit;
+}
+.language::after {
+  content: " •";
+  margin-left: 0.5rem;
+  color: #666;
 }
 
 .status {

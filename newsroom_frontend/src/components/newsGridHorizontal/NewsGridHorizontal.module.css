@@ -111,11 +111,29 @@
   font-family: "Lora", Georgia, serif;
 }
 
+.meta{
+ margin-top: auto;
+}
+
 .time {
   font-size: .8rem;
   color: #a7a7a7;
   margin-top: auto;
   font-family: "Roboto", sans-serif;
+}
+
+.category {
+  font-size: .8rem;
+  color: #a7a7a7;
+  margin-top: auto;
+  font-family: "Roboto", sans-serif;
+}
+
+.category::after {
+  content: "•";
+  margin-left: 0.5rem;
+  margin-right: 0.5rem;
+  color: #666;
 }
 
 /* Responsiivisuus */

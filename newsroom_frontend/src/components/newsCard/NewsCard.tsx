@@ -11,12 +11,34 @@ export default function NewsCard({ news }: { news: NewsItem }) {
 
   // Use published_at if available, fallback to updated_at or created_at
   const displayDate = news.published_at || news.updated_at || news.created_at;
-  const formattedTime = displayDate
-    ? new Date(displayDate).toLocaleTimeString("fi-FI", {
-        hour: "2-digit",
-        minute: "2-digit",
-      })
-    : "";
+
+  // Formatoi päivämäärä/aika logiikka
+  const formatPublishDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const today = new Date();
+
+    // Tarkista onko sama päivä
+    const isSameDay =
+      date.getDate() === today.getDate() &&
+      date.getMonth() === today.getMonth() &&
+      date.getFullYear() === today.getFullYear();
+
+    if (isSameDay) {
+      // Pakota kaksoispiste-muoto kellonaikaan
+      const hours = date.getHours().toString().padStart(2, "0");
+      const minutes = date.getMinutes().toString().padStart(2, "0");
+      return `${hours}:${minutes}`;
+    } else {
+      // Näytä päivämäärä jos eri päivä - käytä pistettä päivämäärässä
+      return date.toLocaleDateString(locale, {
+        day: "numeric",
+        month: "numeric",
+        year: "numeric",
+      });
+    }
+  };
+
+  const formattedTime = displayDate ? formatPublishDate(displayDate) : "";
 
   const slug = SLUGS[locale as keyof typeof SLUGS] || "uutinen";
   const url = `/${locale}/${slug}/${news.id}-${news.url_slug || "uutinen"}`;
@@ -25,8 +47,6 @@ export default function NewsCard({ news }: { news: NewsItem }) {
     <article className={styles.card}>
       <Link href={url} className={styles.cardLink}>
         <div className={styles.content}>
-          <div className={styles.category}>{news.main_category}</div>
-
           <h3 className={styles.title}>{news.lead}</h3>
 
           {news.lead && news.summary && (
@@ -56,6 +76,15 @@ export default function NewsCard({ news }: { news: NewsItem }) {
             {/* Show status if not published */}
             {news.status && news.status !== "published" && (
               <span className={styles.status}>{news.status}</span>
+            )}
+
+            {/* Näytä kategoriat meta-rivillä */}
+            {news.categories && news.categories.length > 0 && (
+              <span className={styles.categories}>
+                {news.categories
+                  .map((cat) => cat[0].toUpperCase() + cat.slice(1))
+                  .join(", ")}
+              </span>
             )}
           </div>
 

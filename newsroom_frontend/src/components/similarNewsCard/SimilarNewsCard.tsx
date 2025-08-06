@@ -11,6 +11,7 @@ interface SimilarNewsCardProps {
     published_at?: string;
     updated_at?: string;
     image_url?: string;
+    categories?: string[];
   };
   locale?: string;
   isLast?: boolean;
@@ -45,7 +46,7 @@ export default function SimilarNewsCard({
     <Link href={`/news/${news.id}`} className={styles.cardLink}>
       <article className={`${styles.card} ${isLast ? styles.noBorder : ""}`}>
         <div className={styles.content}>
-          <div className={styles.category}>kategoria...</div>
+          <div className={styles.category}>{news.categories?.join(" • ")}</div>
 
           <h3 className={styles.title}>{truncateText(title)}</h3>
 

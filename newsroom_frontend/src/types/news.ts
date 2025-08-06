@@ -54,7 +54,6 @@ export type NewsItem = {
   created_at: string;
 
   // Categories and tags
-  main_category: string;
   categories?: string[];
 
   // Images and URLs

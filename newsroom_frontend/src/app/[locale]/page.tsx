@@ -146,6 +146,8 @@ export default async function Home({ searchParams }: HomeProps) {
     },
   });
 
+  console.log("Fetched data:", data);
+
   if (!data?.news) {
     return <p>No news available</p>;
   }

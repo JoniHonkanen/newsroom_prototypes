@@ -15,13 +15,38 @@ export default function FeaturedNews({ news }: { news: NewsItem }) {
   }
 
   const slug = SLUGS[locale as keyof typeof SLUGS] || "uutinen";
-  const url = `/${locale}/${slug}/${news.id}-${news.url_slug || 'uutinen'}`;
+  const url = `/${locale}/${slug}/${news.id}-${news.url_slug || "uutinen"}`;
 
   // Käytä published_at jos saatavilla, muuten updated_at
   const publishDate = news.published_at || news.updated_at;
-  const formattedDate = publishDate
-    ? new Date(publishDate).toLocaleDateString(locale)
-    : "";
+  
+  // Formatoi päivämäärä/aika logiikka
+  const formatPublishDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const today = new Date();
+    
+    // Tarkista onko sama päivä
+    const isSameDay = 
+      date.getDate() === today.getDate() &&
+      date.getMonth() === today.getMonth() &&
+      date.getFullYear() === today.getFullYear();
+    
+    if (isSameDay) {
+      // Pakota kaksoispiste-muoto kellonaikaan
+      const hours = date.getHours().toString().padStart(2, '0');
+      const minutes = date.getMinutes().toString().padStart(2, '0');
+      return `${hours}:${minutes}`;
+    } else {
+      // Näytä päivämäärä jos eri päivä
+      return date.toLocaleDateString(locale, {
+        day: 'numeric',
+        month: 'numeric',
+        year: 'numeric'
+      });
+    }
+  };
+
+  const formattedDate = publishDate ? formatPublishDate(publishDate) : "";
 
   return (
     <section className={styles.featuredNews}>
@@ -46,23 +71,26 @@ export default function FeaturedNews({ news }: { news: NewsItem }) {
             )}
 
             {/* Näytä featured badge */}
-            {news.featured && (
+            {news.categories && (
               <div className={styles.featuredBadge}>
-                FEATURED
+                {news.categories
+                  .map((cat) => cat[0].toUpperCase() + cat.slice(1))
+                  .join(", ")}
               </div>
             )}
           </div>
 
           {/* Näytä location_tags - käyttää olemassa olevaa LocationTag-tyyppiä */}
-          {news.location_tags?.locations && news.location_tags.locations.length > 0 && (
-            <div className={styles.locationTags}>
-              {news.location_tags.locations.map((location, index: number) => (
-                <span key={index} className={styles.locationTag}>
-                  {location.city || location.region || location.country}
-                </span>
-              ))}
-            </div>
-          )}
+          {news.location_tags?.locations &&
+            news.location_tags.locations.length > 0 && (
+              <div className={styles.locationTags}>
+                {news.location_tags.locations.map((location, index: number) => (
+                  <span key={index} className={styles.locationTag}>
+                    {location.city || location.region || location.country}
+                  </span>
+                ))}
+              </div>
+            )}
 
           {/* Näytä sources - TypeScript-turvallinen */}
           {news.sources && news.sources.length > 0 && (
